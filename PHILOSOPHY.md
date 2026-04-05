@@ -1,8 +1,4 @@
-# NoemaForge
-
-## Debug Your Mind: Journaling Web App
-
-Think of this app as a **rock-climbing gym for your brain**: each entry is a route from confusion to clarity, and the goal is to send problems cleanly. Journaling isn’t about precious diaries; it’s the mental equivalent of deploying code—**visible, testable and debuggable**. Below is the philosophy and the blueprint.
+# NoemaForge: Philosophy and Reasoning
 
 ## Why journaling matters
 
@@ -13,7 +9,7 @@ Journaling is self-debugging. When thoughts are written down, they become object
 - **Process emotions**: turning feelings into narratives reduces rumination; reflection good, rumination bad.  
 - **Surface next actions**: writing slows impulsive loops and exposes the real issue beneath the first reaction.  
 - **Keep receipts**: compare what you believed last month with now—course-correct and remember where you came from.  
-- **Think better**: good journaling is private cognitive engineering, not “dear diary”.
+- **Think better**: good journaling is private cognitive engineering, not "dear diary".
 
 ## Multi-modality capture
 
@@ -21,15 +17,15 @@ This app respects the way a fast brain works. It uses **three input modes**, eac
 
 ### 🗣️ Voice capture for raw dumps
 
-Sometimes your mind races faster than your fingers. Voice dictation lets you unload ideas, emotions or brainstorms while walking, driving or pacing. It’s like a first warm-up set: low friction and immediate. Dictation is a great capture tool; follow-up reflection happens in text for clarity.
+Sometimes your mind races faster than your fingers. Voice dictation lets you unload ideas, emotions or brainstorms while walking, driving or pacing. It's like a first warm-up set: low friction and immediate. Dictation is a great capture tool; follow-up reflection happens in text for clarity.
 
 ### ✍️ Handwriting OCR for deep reflection
 
-There’s an embodied magic in pen and paper. Studies suggest handwriting recruits broader brain networks and can deepen recall and reflection ([pmc.nih.gov](https://pmc.ncbi.nlm.nih.gov/articles/PMC11943480/)). If you prefer analog note-taking, snap a photo and let the app’s OCR pull your handwriting into your digital journal. This is for when you need to slow down and feel thoughts in your bones.
+There's an embodied magic in pen and paper. Studies suggest handwriting recruits broader brain networks and can deepen recall and reflection ([pmc.nih.gov](https://pmc.ncbi.nlm.nih.gov/articles/PMC11943480/)). If you prefer analog note-taking, snap a photo and let the app's OCR pull your handwriting into your digital journal. This is for when you need to slow down and feel thoughts in your bones.
 
 ### ⌨️ Typing as the backbone
 
-Typing is the workhorse. It’s fast, searchable, and keeps friction low enough that you’ll actually do it. Most of your notes live here; voice and handwriting are entry points into a common, text-based archive.
+Typing is the workhorse. It's fast, searchable, and keeps friction low enough that you'll actually do it. Most of your notes live here; voice and handwriting are entry points into a common, text-based archive.
 
 ## Flow: from capture to clarity
 
@@ -61,6 +57,6 @@ If you only do one thing, do this five-minute **mental reset**:
 
 ## Final thoughts
 
-This app isn’t just a place to store thoughts; it’s a **cognitive dojo**. Whether you capture ideas with your voice on a run, snap photos of your hand-written notes after climbing, or hammer out a long reflection on your keyboard, the goal is the same: turn mental chaos into decisions. It’s about clarity, continuity and making sure your mind’s output scales with the rest of your life.
+This app isn't just a place to store thoughts; it's a **cognitive dojo**. Whether you capture ideas with your voice on a run, snap photos of your hand-written notes after climbing, or hammer out a long reflection on your keyboard, the goal is the same: turn mental chaos into decisions. It's about clarity, continuity and making sure your mind's output scales with the rest of your life.
 
 Stay curious, stay honest and remember: the best journaling modality is the one you will actually use.
