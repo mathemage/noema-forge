@@ -18,7 +18,7 @@ This app respects the way a fast brain works. It uses **three input modes**, eac
 
 ### 🗣️ Voice capture for raw dumps
 
-Sometimes your mind races faster than your fingers. Voice dictation lets you unload ideas, emotions or brainstorms while walking, driving or pacing. It’s like a first warm-up set: low friction and immediate. Dictation is a great capture tool; follow-up reflection happens in text for clarity.
+Sometimes your mind races faster than your fingers. Voice dictation lets you unload ideas, emotions or brainstorms while walking, pacing, or commuting when you’re not operating a vehicle. It’s like a first warm-up set: low friction and immediate. Dictation is a great capture tool; follow-up reflection happens in text for clarity.
 
 ### ✍️ Handwriting OCR for deep reflection
 

@@ -11,7 +11,7 @@
 
 1. Use latest versions of libraries and idiomatic approaches as of today
 2. Keep it simple - NEVER over-engineer, ALWAYS simplify, NO unnecessary defensive programming. No extra features - focus on simplicity.
-3. Be concise. Keep README minimal. IMPORTANT: no emojis ever
+3. Be concise. Keep README minimal by default. IMPORTANT: no emojis ever, except in README.md and PHILOSOPHY.md, where longer-form product narrative and emoji section headings are intentionally allowed.
 
 ## Git and GitHub
 
