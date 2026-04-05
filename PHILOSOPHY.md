@@ -1,5 +1,6 @@
 # NoemaForge: Philosophy and Reasoning
 
+> Note: This document is an explicit exception to the repo’s default assistant style guidance about keeping docs minimal and avoiding emojis. It is intended to be the canonical long-form philosophy for the project, so the emoji section headings and expanded narrative here are deliberate.
 ## Why journaling matters
 
 Journaling is self-debugging. When thoughts are written down, they become objects you can inspect rather than vague background fog. Research on expressive writing shows that structured reflection can improve metacognition, emotional processing, and decision-making ([apa.org](https://www.apa.org/news/podcasts/speaking-of-psychology/expressive-writing), [sciencedirect.com](https://www.sciencedirect.com/science/article/pii/S2666557322000131)).
