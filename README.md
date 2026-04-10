@@ -1,5 +1,7 @@
 # NoemaForge
 
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://choosealicense.com/licenses/agpl-3.0/)
+
 ## Debug Your Mind: Journaling Web App
 
 NoemaForge is a journaling web app focused on turning raw thoughts into clearer, searchable reflections.
