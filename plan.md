@@ -50,7 +50,7 @@ Use the shared PR template and shared Copilot prompt in the final section for ev
 
 ### Roadmap item 1
 
-- **Title:** `docs(product): Define NoemaForge MVP and roadmap`
+- **Title:** `docs(product): Define NoemaForge MVP roadmap`
 - **Branch:** `docs/mvp-roadmap-8`
 - **Status:** Completed in issue #8
 - **Goal:** lock the product shape, technical direction, and staged PR plan before app scaffolding starts
