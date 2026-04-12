@@ -13,6 +13,7 @@ const createdAt = timestamp("created_at", { withTimezone: true })
 
 const updatedAt = timestamp("updated_at", { withTimezone: true })
   .defaultNow()
+  .$onUpdate(() => new Date())
   .notNull();
 
 export const captureSource = pgEnum("capture_source", ["typed", "voice", "ocr"]);
