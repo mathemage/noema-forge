@@ -78,6 +78,11 @@ web_modules/
 .next
 out
 
+# Local app platform files
+.vercel
+playwright-report/
+test-results/
+
 # Nuxt.js build / generate output
 .nuxt
 dist
