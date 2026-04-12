@@ -75,7 +75,7 @@ Use the shared PR template and shared Copilot prompt in the final section for ev
 - **Why:** before shipping journal features, the project needs a clean app scaffold, environment handling, testing, and CI
 - **Key changes:**
   - scaffold the Next.js application and root project structure
-  - add `.gitignore`, package management, environment configuration, and local setup docs
+  - review/update `.gitignore`, package management, environment configuration, and local setup docs
   - wire PostgreSQL and Drizzle for local and hosted environments
   - add linting, unit tests, Playwright, and GitHub Actions CI
   - add a simple responsive shell, health route, and storage configuration for future uploads
