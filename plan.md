@@ -16,7 +16,7 @@ The first version should:
 
 Recommended stack for v1:
 
-- Next.js 15 with TypeScript for the full-stack web app
+- Next.js (current stable) with TypeScript for the full-stack web app
 - PostgreSQL for journal data, metadata, and search
 - Drizzle ORM for schema management and migrations
 - Tailwind CSS for a responsive mobile-first UI
@@ -32,6 +32,7 @@ Why this stack:
 - Drizzle keeps the schema explicit and easy to review in small PRs
 - Tailwind is enough for a polished UI without committing to a heavy design system too early
 - Vitest plus Playwright matches the repo guidance to emphasize both unit and integration testing
+- Exact framework and library versions should be pinned in the bootstrap PR, not in this long-lived roadmap
 
 Assumptions for MVP:
 
@@ -49,7 +50,7 @@ Keep `README.md` aligned with this plan if the recommended stack or MVP scope ch
 
 - **Title:** `docs(product): Define NoemaForge MVP and roadmap`
 - **Branch:** `docs/mvp-roadmap-8`
-- **Status:** In progress in issue #8
+- **Status:** Completed in issue #8
 - **Goal:** lock the product shape, technical direction, and staged PR plan before app scaffolding starts
 - **PR body:**
 
