@@ -1,24 +1,19 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { GET } from "@/app/api/health/route";
 
-const originalEnv = { ...process.env };
-
 afterEach(() => {
-  process.env = { ...originalEnv };
+  vi.unstubAllEnvs();
 });
 
 describe("GET /api/health", () => {
   it("returns a healthy payload without requiring runtime integrations", async () => {
-    process.env = {
-      ...originalEnv,
-      NEXT_PUBLIC_APP_NAME: "NoemaForge Test",
-    };
-    delete process.env.DATABASE_URL;
-    delete process.env.DATABASE_URL_NON_POOLING;
-    delete process.env.S3_ACCESS_KEY_ID;
-    delete process.env.S3_BUCKET;
-    delete process.env.S3_ENDPOINT;
-    delete process.env.S3_SECRET_ACCESS_KEY;
+    vi.stubEnv("NEXT_PUBLIC_APP_NAME", "NoemaForge Test");
+    vi.stubEnv("DATABASE_URL", undefined);
+    vi.stubEnv("DATABASE_URL_NON_POOLING", undefined);
+    vi.stubEnv("S3_ACCESS_KEY_ID", undefined);
+    vi.stubEnv("S3_BUCKET", undefined);
+    vi.stubEnv("S3_ENDPOINT", undefined);
+    vi.stubEnv("S3_SECRET_ACCESS_KEY", undefined);
 
     const response = await GET();
     const body = (await response.json()) as {
