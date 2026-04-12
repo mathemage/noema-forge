@@ -1,4 +1,4 @@
-# NoemaForge roadmap
+# NoemaForge MVP roadmap
 
 ## Problem
 
