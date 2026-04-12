@@ -183,7 +183,7 @@ Use the roadmap item as the source of truth for scope. For already-started work,
 ```text
 Read plan.md, README.md, and AGENTS.md first. `.github/copilot-instructions.md` mirrors AGENTS.md. Read PHILOSOPHY.md too when the roadmap item changes product behavior rather than only scaffolding.
 
-Create a new GitHub Issue for <roadmap item title>, then create the branch named in that roadmap item and implement only that PR.
+Create a new GitHub Issue for <roadmap item title> if one does not already exist; otherwise use the existing issue. Then create the branch named in that roadmap item and implement only that PR.
 
 Use the roadmap item's Goal, Why, Key changes, Success criteria, and Out of scope bullets as the source of truth.
 Keep the PR narrow, add tests that satisfy the item's success criteria, use a scoped commit message with the issue number, and open a draft PR with the shared PR template.
