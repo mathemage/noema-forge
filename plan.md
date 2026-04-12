@@ -181,7 +181,7 @@ Use this structure when opening a PR for any roadmap item. Fill it with that ite
 Use the roadmap item as the source of truth for scope. For already-started work, use the exact branch shown in that roadmap item.
 
 ```text
-Read plan.md, README.md, AGENTS.md, and .github/copilot-instructions.md first. Read PHILOSOPHY.md too when the roadmap item changes product behavior rather than only scaffolding.
+Read plan.md, README.md, and AGENTS.md first. `.github/copilot-instructions.md` mirrors AGENTS.md. Read PHILOSOPHY.md too when the roadmap item changes product behavior rather than only scaffolding.
 
 Create a new GitHub Issue for <roadmap item title>, then create the branch named in that roadmap item and implement only that PR.
 
