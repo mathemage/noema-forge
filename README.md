@@ -15,5 +15,7 @@ Planned capabilities:
 - Cross-modal capture in a single journal
 - Follow-up prompts to refine raw input into reflection
 - Searchable history for pattern tracking over time
+- Future LLM support would likely use Ollama-backed open-source models on the server side of the Vercel-hosted app
+- LLM use would stay narrow: generate a specific "Next action?" question and offer 2-3 next-step suggestions based on the identified root cause problem
 
 See [PHILOSOPHY.md](PHILOSOPHY.md) for the detailed product philosophy, rationale, and longer-form background.
