@@ -110,7 +110,8 @@ export async function listJournalEntries(
   userId: string,
   db: Database = getDatabase(),
 ) {
-  const { query } = journalSearchSchema.parse(input);
+  const result = journalSearchSchema.safeParse(input);
+  const query = result.success ? result.data.query : undefined;
   const filter = query
     ? and(
         eq(journalEntries.userId, userId),

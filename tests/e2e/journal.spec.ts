@@ -43,9 +43,7 @@ test("desktop user can register, create, edit, search, sign out, and sign back i
   await expect(page.getByRole("heading", { name: "Edit entry" })).toBeVisible();
   const editor = page.locator('textarea[name="body"]');
   await expect(editor).toHaveValue(initialEntry);
-  await editor.click();
-  await editor.press("Control+A");
-  await page.keyboard.type(updatedEntry);
+  await editor.fill(updatedEntry);
   await expect(editor).toHaveValue(updatedEntry);
   await page.getByRole("button", { name: "Save changes" }).click();
 
