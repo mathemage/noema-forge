@@ -21,3 +21,19 @@ export function createDatabase(connectionString = getDatabaseUrl()) {
   const client = createPostgresClient(connectionString);
   return drizzle(client, { schema });
 }
+
+type DatabaseGlobal = typeof globalThis & {
+  __noemaForgeDatabase?: ReturnType<typeof createDatabase>;
+};
+
+export type Database = ReturnType<typeof createDatabase>;
+
+export function getDatabase() {
+  const databaseGlobal = globalThis as DatabaseGlobal;
+
+  if (!databaseGlobal.__noemaForgeDatabase) {
+    databaseGlobal.__noemaForgeDatabase = createDatabase();
+  }
+
+  return databaseGlobal.__noemaForgeDatabase;
+}

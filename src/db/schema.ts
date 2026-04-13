@@ -24,8 +24,23 @@ export const users = pgTable("users", {
   displayName: text("display_name"),
   email: text("email").notNull().unique(),
   id: text("id").primaryKey(),
+  passwordHash: text("password_hash").notNull(),
   updatedAt,
 });
+
+export const userSessions = pgTable(
+  "user_sessions",
+  {
+    createdAt,
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    id: text("id").primaryKey(),
+    tokenHash: text("token_hash").notNull().unique(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+  },
+  (table) => [index("user_sessions_user_expires_at_idx").on(table.userId, table.expiresAt)],
+);
 
 export const journalEntries = pgTable(
   "journal_entries",
