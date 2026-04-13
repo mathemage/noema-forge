@@ -17,7 +17,6 @@ export function getRequestOrigin(request: NextRequest) {
   return `${protocol}://${host}`;
 }
 
-export function getRequestUrl(request: NextRequest, pathname: string) {
-  void request;
+export function getRequestUrl(_request: NextRequest, pathname: string) {
   return new URL(pathname, readServerEnv().NEXT_PUBLIC_APP_URL);
 }
