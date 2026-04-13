@@ -29,7 +29,7 @@ vi.mock("@/lib/auth/session", () => ({
 
 import { POST } from "@/app/auth/register/route";
 import { AuthError, registerUser } from "@/lib/auth/service";
-import { createUserSession } from "@/lib/auth/session";
+import { createUserSession, getSessionCookie } from "@/lib/auth/session";
 
 afterEach(() => {
   vi.clearAllMocks();
@@ -37,6 +37,8 @@ afterEach(() => {
 
 describe("POST /auth/register", () => {
   it("creates a session and redirects to the journal", async () => {
+    const expiresAt = new Date("2030-01-01T00:00:00.000Z");
+
     vi.mocked(registerUser).mockResolvedValue({
       createdAt: new Date(),
       displayName: null,
@@ -45,7 +47,7 @@ describe("POST /auth/register", () => {
       updatedAt: new Date(),
     });
     vi.mocked(createUserSession).mockResolvedValue({
-      expiresAt: new Date("2030-01-01T00:00:00.000Z"),
+      expiresAt,
       token: "session-token",
     });
 
@@ -70,6 +72,11 @@ describe("POST /auth/register", () => {
       password: "journal-pass-123",
     });
     expect(createUserSession).toHaveBeenCalledWith("user-1");
+    expect(getSessionCookie).toHaveBeenCalledWith(
+      "session-token",
+      expiresAt,
+      expect.any(NextRequest),
+    );
   });
 
   it("redirects back to sign-in when registration fails validation", async () => {

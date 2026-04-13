@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     303,
   );
 
-  response.cookies.set(getClearedSessionCookie());
+  response.cookies.set(getClearedSessionCookie(request));
 
   return response;
 }

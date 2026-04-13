@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     const session = await createUserSession(user.id);
     const response = NextResponse.redirect(getRequestUrl(request, "/"), 303);
 
-    response.cookies.set(getSessionCookie(session.token, session.expiresAt));
+    response.cookies.set(getSessionCookie(session.token, session.expiresAt, request));
 
     return response;
   } catch (error) {

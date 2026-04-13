@@ -42,7 +42,7 @@ jobs:
         run: npm ci
 
       - name: Apply database schema
-        run: npm run db:push
+        run: npm run db:push:ci
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium

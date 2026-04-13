@@ -1,7 +1,10 @@
+import type { NextRequest } from "next/server";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { userSessions, users } from "@/db/schema";
 import { getDatabase, type Database } from "@/lib/db/client";
+import { readServerEnv } from "@/lib/env";
+import { getRequestOrigin } from "@/lib/request-url";
 import type { AuthUser } from "@/lib/auth/service";
 
 export const SESSION_COOKIE_NAME = "noema_forge_session";
@@ -16,19 +19,28 @@ export function getSessionExpiryDate() {
   return new Date(Date.now() + SESSION_TTL_MS);
 }
 
-export function getSessionCookie(token: string, expiresAt: Date) {
+function shouldUseSecureSessionCookie(request?: NextRequest) {
+  const origin = request ? getRequestOrigin(request) : readServerEnv().NEXT_PUBLIC_APP_URL;
+  return new URL(origin).protocol === "https:";
+}
+
+export function getSessionCookie(
+  token: string,
+  expiresAt: Date,
+  request?: NextRequest,
+) {
   return {
     expires: expiresAt,
     httpOnly: true,
     name: SESSION_COOKIE_NAME,
     path: "/",
     sameSite: "lax" as const,
-    secure: process.env.NODE_ENV === "production",
+    secure: shouldUseSecureSessionCookie(request),
     value: token,
   };
 }
 
-export function getClearedSessionCookie() {
+export function getClearedSessionCookie(request?: NextRequest) {
   return {
     expires: new Date(0),
     httpOnly: true,
@@ -36,7 +48,7 @@ export function getClearedSessionCookie() {
     name: SESSION_COOKIE_NAME,
     path: "/",
     sameSite: "lax" as const,
-    secure: process.env.NODE_ENV === "production",
+    secure: shouldUseSecureSessionCookie(request),
     value: "",
   };
 }
