@@ -15,6 +15,13 @@
       "when": 1776095200276,
       "tag": "0001_bent_tomas",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1776125614241,
+      "tag": "0002_colorful_maximus",
+      "breakpoints": true
     }
   ]
 }

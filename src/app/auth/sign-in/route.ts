@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
       password: String(formData.get("password") ?? ""),
     });
     const session = await createUserSession(user.id);
-    const response = NextResponse.redirect(getRequestUrl(request, "/"), 303);
+    const response = NextResponse.redirect(getRequestUrl("/"), 303);
 
     response.cookies.set(getSessionCookie(session.token, session.expiresAt, request));
 
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof AuthError) {
       return NextResponse.redirect(
-        getRequestUrl(request, `/sign-in?error=${error.code}`),
+        getRequestUrl(`/sign-in?error=${error.code}`),
         303,
       );
     }

@@ -40,6 +40,17 @@ function parseCredentials(input: CredentialsInput) {
   return result.data;
 }
 
+function isEmailTakenError(error: unknown) {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    error.code === "23505" &&
+    "constraint_name" in error &&
+    error.constraint_name === "users_email_unique"
+  );
+}
+
 export async function registerUser(
   input: CredentialsInput,
   db: Database = getDatabase(),
@@ -56,16 +67,25 @@ export async function registerUser(
   }
 
   const passwordHash = await hashPassword(credentials.password);
-  const [user] = await db
-    .insert(users)
-    .values({
-      email: credentials.email,
-      id: randomUUID(),
-      passwordHash,
-    })
-    .returning(authUserSelect);
 
-  return user;
+  try {
+    const [user] = await db
+      .insert(users)
+      .values({
+        email: credentials.email,
+        id: randomUUID(),
+        passwordHash,
+      })
+      .returning(authUserSelect);
+
+    return user;
+  } catch (error) {
+    if (isEmailTakenError(error)) {
+      throw new AuthError("email-taken");
+    }
+
+    throw error;
+  }
 }
 
 export async function authenticateUser(
@@ -82,7 +102,7 @@ export async function authenticateUser(
     .where(eq(users.email, credentials.email))
     .limit(1);
 
-  if (!user) {
+  if (!user || !user.passwordHash) {
     throw new AuthError("invalid-credentials");
   }
 

@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
   await deleteSessionByToken(request.cookies.get(SESSION_COOKIE_NAME)?.value);
 
   const response = NextResponse.redirect(
-    getRequestUrl(request, "/sign-in?message=signed-out"),
+    getRequestUrl("/sign-in?message=signed-out"),
     303,
   );
 

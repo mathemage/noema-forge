@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
   const user = await getRequestUser(request);
 
   if (!user) {
-    return NextResponse.redirect(getRequestUrl(request, "/sign-in"), 303);
+    return NextResponse.redirect(getRequestUrl("/sign-in"), 303);
   }
 
   const formData = await request.formData();
@@ -21,13 +21,13 @@ export async function POST(request: NextRequest) {
     );
 
     return NextResponse.redirect(
-      getRequestUrl(request, `/entries/${entry.id}?message=created`),
+      getRequestUrl(`/entries/${entry.id}?message=created`),
       303,
     );
   } catch (error) {
     if (error instanceof JournalError) {
       return NextResponse.redirect(
-        getRequestUrl(request, `/?error=${error.code}`),
+        getRequestUrl(`/?error=${error.code}`),
         303,
       );
     }

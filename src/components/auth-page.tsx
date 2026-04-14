@@ -11,13 +11,12 @@ const authErrorMessages: Record<string, string> = {
     "Use a valid email address and a password with at least 8 characters.",
 };
 
-const authMessageMessages: Record<string, string> = {
+const authMessages: Record<string, string> = {
   "signed-out": "You have been signed out.",
 };
 
 export function AuthPage({ appName, error, message }: AuthPageProps) {
-  const notice =
-    (error && authErrorMessages[error]) || (message && authMessageMessages[message]);
+  const notice = (error && authErrorMessages[error]) || (message && authMessages[message]);
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col justify-center gap-8 px-4 py-8 sm:px-6 lg:px-8">

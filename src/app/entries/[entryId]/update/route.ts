@@ -14,7 +14,7 @@ export async function POST(
   const user = await getRequestUser(request);
 
   if (!user) {
-    return NextResponse.redirect(getRequestUrl(request, "/sign-in"), 303);
+    return NextResponse.redirect(getRequestUrl("/sign-in"), 303);
   }
 
   const { entryId } = await context.params;
@@ -30,7 +30,7 @@ export async function POST(
     );
 
     return NextResponse.redirect(
-      getRequestUrl(request, `/entries/${entryId}?message=updated`),
+      getRequestUrl(`/entries/${entryId}?message=updated`),
       303,
     );
   } catch (error) {
@@ -40,7 +40,7 @@ export async function POST(
           ? `/entries/${entryId}/edit?error=${error.code}`
           : "/?error=not-found";
 
-      return NextResponse.redirect(getRequestUrl(request, pathname), 303);
+      return NextResponse.redirect(getRequestUrl(pathname), 303);
     }
 
     throw error;
