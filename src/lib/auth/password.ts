@@ -21,6 +21,16 @@ function deriveKey(password: string, salt: string, options = SCRYPT_PARAMS) {
   });
 }
 
+function parsePositiveSafeInteger(value: string) {
+  const parsedValue = Number(value);
+
+  if (!Number.isSafeInteger(parsedValue) || parsedValue <= 0) {
+    return null;
+  }
+
+  return parsedValue;
+}
+
 export async function hashPassword(password: string) {
   const salt = randomBytes(SALT_BYTES).toString("hex");
   const derivedKey = await deriveKey(password, salt);
@@ -47,11 +57,26 @@ export async function verifyPassword(password: string, storedHash: string) {
     return false;
   }
 
-  const derivedKey = await deriveKey(password, salt, {
-    N: Number(cost),
-    p: Number(parallelization),
-    r: Number(blockSize),
-  });
+  const parsedCost = parsePositiveSafeInteger(cost);
+  const parsedBlockSize = parsePositiveSafeInteger(blockSize);
+  const parsedParallelization = parsePositiveSafeInteger(parallelization);
+
+  if (!parsedCost || !parsedBlockSize || !parsedParallelization) {
+    return false;
+  }
+
+  let derivedKey: Buffer;
+
+  try {
+    derivedKey = await deriveKey(password, salt, {
+      N: parsedCost,
+      p: parsedParallelization,
+      r: parsedBlockSize,
+    });
+  } catch {
+    return false;
+  }
+
   const storedBuffer = Buffer.from(hash, "hex");
 
   if (storedBuffer.length !== derivedKey.length) {

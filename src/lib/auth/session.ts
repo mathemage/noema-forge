@@ -72,26 +72,30 @@ export async function createUserSession(
 
 export async function deleteSessionByToken(
   token: string | undefined,
-  db: Database = getDatabase(),
+  db?: Database,
 ) {
   if (!token) {
     return;
   }
 
-  await db
+  const database = db ?? getDatabase();
+
+  await database
     .delete(userSessions)
     .where(eq(userSessions.tokenHash, hashSessionToken(token)));
 }
 
 export async function getUserBySessionToken(
   token: string | undefined,
-  db: Database = getDatabase(),
+  db?: Database,
 ): Promise<AuthUser | null> {
   if (!token) {
     return null;
   }
 
-  const [sessionUser] = await db
+  const database = db ?? getDatabase();
+
+  const [sessionUser] = await database
     .select({
       createdAt: users.createdAt,
       displayName: users.displayName,
@@ -110,7 +114,7 @@ export async function getUserBySessionToken(
   }
 
   if (sessionUser.expiresAt <= new Date()) {
-    await deleteSessionByToken(token, db);
+    await deleteSessionByToken(token, database);
     return null;
   }
 
