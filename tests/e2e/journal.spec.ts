@@ -1,7 +1,8 @@
+import { randomUUID } from "node:crypto";
 import { expect, test } from "@playwright/test";
 
 function createCredentials() {
-  const uniqueId = `${Date.now()}-${Math.round(Math.random() * 10_000)}`;
+  const uniqueId = randomUUID();
 
   return {
     email: `journal-${uniqueId}@example.com`,
