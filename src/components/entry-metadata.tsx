@@ -1,10 +1,7 @@
+import type { JournalEntryRecord } from "@/lib/journal/service";
 import { formatTimestamp } from "@/lib/formatting";
 
-type EntryMetadataProps = {
-  createdAt: Date;
-  source: string;
-  updatedAt: Date;
-};
+type EntryMetadataProps = Pick<JournalEntryRecord, "createdAt" | "source" | "updatedAt">;
 
 export function EntryMetadata({
   createdAt,

@@ -20,8 +20,17 @@ export function getSessionExpiryDate() {
 }
 
 function shouldUseSecureSessionCookie(request?: NextRequest) {
-  const origin = request ? getRequestOrigin(request) : readServerEnv().NEXT_PUBLIC_APP_URL;
-  return new URL(origin).protocol === "https:";
+  const configuredOrigin = readServerEnv().NEXT_PUBLIC_APP_URL;
+
+  if (new URL(configuredOrigin).protocol === "https:") {
+    return true;
+  }
+
+  if (!request) {
+    return false;
+  }
+
+  return new URL(getRequestOrigin(request)).protocol === "https:";
 }
 
 export function getSessionCookie(

@@ -25,7 +25,7 @@ describe("session cookie helpers", () => {
     expect(cookie.secure).toBe(true);
   });
 
-  it("uses the current request origin when deciding cookie security", () => {
+  it("keeps cookies secure when the configured app URL is HTTPS", () => {
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://journal.example.com");
 
     const cookie = getSessionCookie(
@@ -36,7 +36,7 @@ describe("session cookie helpers", () => {
       }),
     );
 
-    expect(cookie.secure).toBe(false);
+    expect(cookie.secure).toBe(true);
   });
 
   it("preserves secure cookies when a proxy forwards HTTPS requests", () => {
@@ -54,5 +54,23 @@ describe("session cookie helpers", () => {
 
     expect(cookie.secure).toBe(true);
     expect(cookie.maxAge).toBe(0);
+  });
+
+  it("does not let forwarded HTTP downgrade an HTTPS app cookie", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://journal.example.com");
+
+    const cookie = getSessionCookie(
+      "session-token",
+      expiresAt,
+      new NextRequest("http://127.0.0.1:3000/auth/register", {
+        headers: {
+          "x-forwarded-host": "journal.example.com",
+          "x-forwarded-proto": "http",
+        },
+        method: "POST",
+      }),
+    );
+
+    expect(cookie.secure).toBe(true);
   });
 });

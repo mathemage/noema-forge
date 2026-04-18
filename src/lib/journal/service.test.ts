@@ -3,6 +3,7 @@ import type { Database } from "@/lib/db/client";
 import {
   createJournalEntry,
   getJournalEntry,
+  JOURNAL_HISTORY_PAGE_SIZE,
   JournalError,
   listJournalEntries,
   updateJournalEntry,
@@ -40,12 +41,18 @@ function mockUpdateDb(returnRows: unknown[]) {
 }
 
 function mockSelectDb(returnRows: unknown[]) {
+  const limitFromOrderBy = vi.fn().mockResolvedValue(returnRows);
+  const orderBy = vi.fn().mockReturnValue({
+    limit: limitFromOrderBy,
+  });
+  const limit = vi.fn().mockResolvedValue(returnRows);
+
   return {
     select: vi.fn().mockReturnValue({
       from: vi.fn().mockReturnValue({
         where: vi.fn().mockReturnValue({
-          limit: vi.fn().mockResolvedValue(returnRows),
-          orderBy: vi.fn().mockResolvedValue(returnRows),
+          limit,
+          orderBy,
         }),
       }),
     }),
@@ -128,6 +135,19 @@ describe("listJournalEntries", () => {
     const db = mockSelectDb([MOCK_ENTRY]);
     const results = await listJournalEntries({}, "user-1", db);
     expect(results).toEqual([MOCK_ENTRY]);
+  });
+
+  it("limits journal history to the default page size", async () => {
+    const db = mockSelectDb([MOCK_ENTRY]);
+    await listJournalEntries({}, "user-1", db);
+    const orderByMock = (db.select as ReturnType<typeof vi.fn>).mock.results[0].value
+      .from.mock.results[0].value.where.mock.results[0].value.orderBy as ReturnType<
+      typeof vi.fn
+    >;
+    const listLimitMock = orderByMock.mock.results[0].value.limit as ReturnType<
+      typeof vi.fn
+    >;
+    expect(listLimitMock).toHaveBeenCalledWith(JOURNAL_HISTORY_PAGE_SIZE);
   });
 
   it("returns entries when a valid search query is provided", async () => {

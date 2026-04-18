@@ -27,6 +27,8 @@ export type JournalEntryRecord = {
   userId: string;
 };
 
+export const JOURNAL_HISTORY_PAGE_SIZE = 100;
+
 const journalEntrySelect = {
   body: journalEntries.body,
   createdAt: journalEntries.createdAt,
@@ -123,5 +125,6 @@ export async function listJournalEntries(
     .select(journalEntrySelect)
     .from(journalEntries)
     .where(filter)
-    .orderBy(desc(journalEntries.createdAt));
+    .orderBy(desc(journalEntries.createdAt))
+    .limit(JOURNAL_HISTORY_PAGE_SIZE);
 }
