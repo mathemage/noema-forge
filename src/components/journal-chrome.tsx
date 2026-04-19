@@ -1,7 +1,9 @@
+import type { ReactNode } from "react";
+
 type JournalChromeProps = {
-  actions?: React.ReactNode;
+  actions?: ReactNode;
   appName: string;
-  children: React.ReactNode;
+  children: ReactNode;
   description: string;
   title: string;
   userEmail: string;
