@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "NoemaForge",
-  description: "Bootstrap scaffold for the NoemaForge journaling app.",
+  description: "Private typed capture and journal history for NoemaForge.",
 };
 
 export default function RootLayout({

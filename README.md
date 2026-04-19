@@ -14,9 +14,9 @@ NoemaForge is a journaling web app focused on turning raw thoughts into clearer,
 4. Apply the bootstrap schema: `npm run db:push`
 5. Start the app: `npm run dev`
 
-The app runs at `http://127.0.0.1:3000` and the health route is `http://127.0.0.1:3000/api/health`.
+The app runs at `http://127.0.0.1:3000`. Open it to create a journal account or sign in, and use `http://127.0.0.1:3000/api/health` for the health route.
 
-The app will still boot without Postgres or S3 configured; the health route and home page will show those integrations as pending until you add the environment values.
+The sign-in page and health route still load without Postgres configured, but account creation, journal entry saves, edits, and search require `DATABASE_URL`.
 
 ## Scripts
 
