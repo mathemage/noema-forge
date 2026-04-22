@@ -18,6 +18,8 @@ The app runs at `http://127.0.0.1:3000`. Open it to create a journal account or 
 
 The sign-in page and health route still load without Postgres configured, but account creation, journal entry saves, edits, and search require `DATABASE_URL`.
 
+By default, auth stays on the first-party journal session flow. To enable the optional Auth.js credentials alternative, set `AUTH_SIGN_IN_MODE=authjs-credentials`, provide `AUTH_SECRET`, and set `AUTH_TRUST_HOST=true` if your deployment relies on forwarded proxy headers. The same journal user records and entry routes stay in place; only the sign-in/session mechanism changes.
+
 ## Scripts
 
 | Command | Purpose |

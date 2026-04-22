@@ -1,9 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import type { NextAuthRequest } from "next-auth";
+import { auth } from "@/auth";
 import { getRequestUser } from "@/lib/auth/request";
 import { JournalError, createJournalEntry } from "@/lib/journal/service";
 import { getRequestUrl } from "@/lib/request-url";
 
-export async function POST(request: NextRequest) {
+async function handlePost(request: NextAuthRequest) {
   const user = await getRequestUser(request);
 
   if (!user) {
@@ -35,3 +37,5 @@ export async function POST(request: NextRequest) {
     throw error;
   }
 }
+
+export const POST = auth(handlePost);

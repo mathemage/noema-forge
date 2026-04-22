@@ -1,8 +1,9 @@
 import { EntryMetadata } from "@/components/entry-metadata";
 import { JournalChrome } from "@/components/journal-chrome";
+import { signOutWithAuthJsCredentials } from "@/lib/auth/authjs-actions";
 import { JournalEntryForm } from "@/components/journal-entry-form";
 import { requireCurrentUser } from "@/lib/auth/current-user";
-import { readServerEnv } from "@/lib/env";
+import { readServerEnv, usesAuthJsCredentials } from "@/lib/env";
 import { excerptText } from "@/lib/formatting";
 import { listJournalEntries } from "@/lib/journal/service";
 import { getSingleSearchParam } from "@/lib/search-params";
@@ -23,6 +24,9 @@ export default async function Home({ searchParams }: HomePageProps) {
   const user = await requireCurrentUser();
   const params = await searchParams;
   const env = readServerEnv();
+  const signOutAction = usesAuthJsCredentials(env)
+    ? signOutWithAuthJsCredentials
+    : "/auth/sign-out";
   const query = getSingleSearchParam(params.q)?.trim() ?? "";
   const error = getSingleSearchParam(params.error);
   const entries = await listJournalEntries({ query }, user.id);
@@ -31,12 +35,14 @@ export default async function Home({ searchParams }: HomePageProps) {
     <JournalChrome
       appName={env.NEXT_PUBLIC_APP_NAME}
       description="Capture typed thoughts, edit them later, and search the archive without leaving your private journal."
+      signOutAction={signOutAction}
       title="Journal history"
       userEmail={user.email}
     >
       <div className="grid gap-6 xl:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
         <JournalEntryForm
           action="/entries"
+          key="new-entry"
           description="Typing is the default capture path for this slice. Save raw thoughts here, then review or edit them from the archive."
           error={error ? homeErrorMessages[error] : undefined}
           heading="New typed entry"

@@ -15,6 +15,15 @@ const textWithDefault = (defaultValue: string) =>
   z.preprocess(coerceOptional, z.string().default(defaultValue));
 
 const serverEnvSchema = z.object({
+  AUTH_SECRET: optionalText,
+  AUTH_SIGN_IN_MODE: z.preprocess(
+    coerceOptional,
+    z.enum(["journal", "authjs-credentials"]).default("journal"),
+  ),
+  AUTH_TRUST_HOST: z.preprocess(
+    coerceOptional,
+    z.enum(["true", "false"]).default("false"),
+  ),
   DATABASE_URL: optionalUrl,
   DATABASE_URL_NON_POOLING: optionalUrl,
   NEXT_PUBLIC_APP_NAME: textWithDefault("NoemaForge"),
@@ -46,6 +55,30 @@ export type StorageConfig = {
 
 export function readServerEnv(source: NodeJS.ProcessEnv = process.env): ServerEnv {
   return serverEnvSchema.parse(source);
+}
+
+export function usesAuthJsCredentials(env: ServerEnv = readServerEnv()) {
+  return env.AUTH_SIGN_IN_MODE === "authjs-credentials";
+}
+
+export function shouldTrustAuthHost(env: ServerEnv = readServerEnv()) {
+  if (env.AUTH_TRUST_HOST === "true") {
+    return true;
+  }
+
+  return ["127.0.0.1", "::1", "localhost"].includes(
+    new URL(env.NEXT_PUBLIC_APP_URL).hostname,
+  );
+}
+
+export function getAuthSecret(env: ServerEnv = readServerEnv()) {
+  if (!env.AUTH_SECRET) {
+    throw new Error(
+      "AUTH_SECRET is required when AUTH_SIGN_IN_MODE=authjs-credentials.",
+    );
+  }
+
+  return env.AUTH_SECRET;
 }
 
 export function hasDatabaseConfig(env: ServerEnv = readServerEnv()) {
