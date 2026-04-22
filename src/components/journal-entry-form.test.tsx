@@ -4,7 +4,7 @@ import { render, screen } from "@testing-library/react";
 import { JournalEntryForm } from "@/components/journal-entry-form";
 
 describe("JournalEntryForm", () => {
-  it("syncs the textarea value when the body prop changes", () => {
+  it("shows the new body after a keyed remount", () => {
     const { rerender } = render(
       <JournalEntryForm
         action="/entries/entry-1/update"

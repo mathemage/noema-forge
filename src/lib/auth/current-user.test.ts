@@ -69,4 +69,29 @@ describe("getCurrentUser", () => {
     });
     expect(auth).toHaveBeenCalledTimes(1);
   });
+
+  it("prefers the first-party session over Auth.js in credentials mode", async () => {
+    vi.stubEnv("AUTH_SIGN_IN_MODE", "authjs-credentials");
+    cookies.mockResolvedValue({
+      get: vi.fn(() => ({ value: "session-token" })),
+    });
+    vi.mocked(getUserBySessionToken).mockResolvedValue({
+      createdAt: new Date("2024-01-01T00:00:00.000Z"),
+      displayName: null,
+      email: "user@example.com",
+      id: "user-1",
+      updatedAt: new Date("2024-01-02T00:00:00.000Z"),
+    });
+
+    const { getCurrentUser } = await import("@/lib/auth/current-user");
+
+    await expect(getCurrentUser()).resolves.toEqual({
+      createdAt: new Date("2024-01-01T00:00:00.000Z"),
+      displayName: null,
+      email: "user@example.com",
+      id: "user-1",
+      updatedAt: new Date("2024-01-02T00:00:00.000Z"),
+    });
+    expect(auth).not.toHaveBeenCalled();
+  });
 });
