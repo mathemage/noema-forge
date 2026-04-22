@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import type { NextAuthRequest } from "next-auth";
 import { getAuthUserFromAuthJsSession } from "@/lib/auth/authjs-session";
+import { readServerEnv, usesAuthJsCredentials } from "@/lib/env";
 import { getUserBySessionToken, SESSION_COOKIE_NAME } from "@/lib/auth/session";
 
 export function getSessionTokenFromRequest(request: NextRequest) {
@@ -12,6 +13,10 @@ export async function getRequestUser(request: NextRequest | NextAuthRequest) {
 
   if (sessionUser) {
     return sessionUser;
+  }
+
+  if (!usesAuthJsCredentials(readServerEnv())) {
+    return null;
   }
 
   return "auth" in request ? getAuthUserFromAuthJsSession(request.auth) : null;

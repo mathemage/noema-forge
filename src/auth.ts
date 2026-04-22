@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { randomBytes } from "node:crypto";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import type { NextAuthConfig } from "next-auth";
@@ -15,9 +15,7 @@ const env = readServerEnv();
 const authJsCredentialsEnabled = usesAuthJsCredentials(env);
 const secret = authJsCredentialsEnabled
   ? getAuthSecret(env)
-  : createHash("sha256")
-      .update(`${env.NEXT_PUBLIC_APP_NAME}:${env.NEXT_PUBLIC_APP_URL}:journal`)
-      .digest("hex");
+  : randomBytes(32).toString("hex");
 
 const parseTokenDate = (value: unknown) => {
   if (typeof value !== "string") {

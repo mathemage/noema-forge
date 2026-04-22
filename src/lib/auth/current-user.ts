@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { getAuthUserFromAuthJsSession } from "@/lib/auth/authjs-session";
+import { readServerEnv, usesAuthJsCredentials } from "@/lib/env";
 import { getUserBySessionToken, SESSION_COOKIE_NAME } from "@/lib/auth/session";
 
 export async function getCurrentUser() {
@@ -12,6 +13,10 @@ export async function getCurrentUser() {
 
   if (sessionUser) {
     return sessionUser;
+  }
+
+  if (!usesAuthJsCredentials(readServerEnv())) {
+    return null;
   }
 
   return getAuthUserFromAuthJsSession(await auth());
