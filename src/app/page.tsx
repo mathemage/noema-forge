@@ -42,6 +42,7 @@ export default async function Home({ searchParams }: HomePageProps) {
       <div className="grid gap-6 xl:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
         <JournalEntryForm
           action="/entries"
+          key="new-entry"
           description="Typing is the default capture path for this slice. Save raw thoughts here, then review or edit them from the archive."
           error={error ? homeErrorMessages[error] : undefined}
           heading="New typed entry"

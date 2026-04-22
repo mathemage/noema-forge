@@ -57,6 +57,7 @@ export default async function EditEntryPage({
         description="Update the typed text and keep the entry in the same searchable archive."
         error={error ? editErrorMessages[error] : undefined}
         heading="Revise this entry"
+        key={entry.id}
         submitLabel="Save changes"
       />
     </JournalChrome>

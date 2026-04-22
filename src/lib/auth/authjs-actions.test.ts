@@ -1,9 +1,18 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-const { redirect } = vi.hoisted(() => ({
+const { cookieStore, cookies, redirect } = vi.hoisted(() => ({
+  cookieStore: {
+    get: vi.fn(),
+    set: vi.fn(),
+  },
+  cookies: vi.fn(),
   redirect: vi.fn((location: string) => {
     throw new Error(`redirect:${location}`);
   }),
+}));
+
+vi.mock("next/headers", () => ({
+  cookies,
 }));
 
 vi.mock("next/navigation", () => ({
@@ -51,6 +60,21 @@ vi.mock("@/lib/auth/service", () => ({
   registerUser: vi.fn(),
 }));
 
+vi.mock("@/lib/auth/session", () => ({
+  deleteSessionByToken: vi.fn(),
+  getClearedSessionCookie: vi.fn(() => ({
+    expires: new Date(0),
+    httpOnly: true,
+    maxAge: 0,
+    name: "noema_forge_session",
+    path: "/",
+    sameSite: "lax" as const,
+    secure: false,
+    value: "",
+  })),
+  SESSION_COOKIE_NAME: "noema_forge_session",
+}));
+
 import { CredentialsSignin } from "next-auth";
 import {
   registerWithAuthJsCredentials,
@@ -59,6 +83,10 @@ import {
 } from "@/lib/auth/authjs-actions";
 import { signIn, signOut } from "@/auth";
 import { registerUser } from "@/lib/auth/service";
+import {
+  deleteSessionByToken,
+  getClearedSessionCookie,
+} from "@/lib/auth/session";
 
 afterEach(() => {
   vi.resetAllMocks();
@@ -118,8 +146,22 @@ describe("Auth.js credential actions", () => {
   it("routes sign-out through Auth.js when the alternative mode is enabled", async () => {
     vi.stubEnv("AUTH_SIGN_IN_MODE", "authjs-credentials");
     vi.mocked(signOut).mockResolvedValue(undefined as never);
+    cookieStore.get.mockReturnValue({ value: "session-token" });
+    cookies.mockResolvedValue(cookieStore);
 
     await expect(signOutWithAuthJsCredentials(new FormData())).resolves.toBeUndefined();
+    expect(deleteSessionByToken).toHaveBeenCalledWith("session-token");
+    expect(getClearedSessionCookie).toHaveBeenCalledWith();
+    expect(cookieStore.set).toHaveBeenCalledWith({
+      expires: new Date(0),
+      httpOnly: true,
+      maxAge: 0,
+      name: "noema_forge_session",
+      path: "/",
+      sameSite: "lax",
+      secure: false,
+      value: "",
+    });
     expect(signOut).toHaveBeenCalledWith({
       redirectTo: "/sign-in?message=signed-out",
     });

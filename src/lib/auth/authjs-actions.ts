@@ -1,9 +1,15 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { AuthError as NextAuthError } from "next-auth";
 import { signIn, signOut } from "@/auth";
 import { AuthError, registerUser } from "@/lib/auth/service";
+import {
+  deleteSessionByToken,
+  getClearedSessionCookie,
+  SESSION_COOKIE_NAME,
+} from "@/lib/auth/session";
 import { credentialsSchema, type CredentialsInput } from "@/lib/auth/validation";
 import { usesAuthJsCredentials } from "@/lib/env";
 
@@ -81,6 +87,10 @@ export async function signInWithAuthJsCredentials(formData: FormData) {
 export async function signOutWithAuthJsCredentials(formData: FormData) {
   assertAuthJsCredentialsEnabled();
   void formData;
+
+  const cookieStore = await cookies();
+  await deleteSessionByToken(cookieStore.get(SESSION_COOKIE_NAME)?.value);
+  cookieStore.set(getClearedSessionCookie());
 
   await signOut({
     redirectTo: "/sign-in?message=signed-out",
