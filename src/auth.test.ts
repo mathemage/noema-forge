@@ -53,4 +53,44 @@ describe("auth configuration", () => {
 
     expect(credentialsProvider).toHaveBeenCalledTimes(1);
   });
+
+  it("leaves session dates unset when JWT claims are missing", async () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_NAME", "NoemaForge");
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "http://127.0.0.1:3000");
+
+    await import("@/auth");
+
+    const config = vi.mocked(nextAuth).mock.calls[0]?.[0] as {
+      callbacks: {
+        session: (args: {
+          session: {
+            expires: string;
+            user: {
+              email?: string | null;
+              image?: string | null;
+              name?: string | null;
+            };
+          };
+          token: Record<string, unknown>;
+        }) => Promise<{
+          expires: string;
+          user: {
+            createdAt?: Date;
+            updatedAt?: Date;
+          } & Record<string, unknown>;
+        }>;
+      };
+    };
+
+    const session = await config.callbacks.session({
+      session: {
+        expires: "2030-01-01T00:00:00.000Z",
+        user: {},
+      },
+      token: {},
+    });
+
+    expect(session.user.createdAt).toBeUndefined();
+    expect(session.user.updatedAt).toBeUndefined();
+  });
 });

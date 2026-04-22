@@ -19,11 +19,11 @@ const secret = authJsCredentialsEnabled
 
 const parseTokenDate = (value: unknown) => {
   if (typeof value !== "string") {
-    return new Date(0);
+    return undefined;
   }
 
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? new Date(0) : date;
+  return Number.isNaN(date.getTime()) ? undefined : date;
 };
 
 const authConfig = {
@@ -42,15 +42,18 @@ const authConfig = {
       return token;
     },
     async session({ session, token }) {
+      const createdAt = parseTokenDate(token.createdAt);
+      const updatedAt = parseTokenDate(token.updatedAt);
+
       session.user = {
         ...session.user,
-        createdAt: parseTokenDate(token.createdAt),
+        createdAt,
         displayName:
           typeof token.displayName === "string" ? token.displayName : null,
         email: typeof token.email === "string" ? token.email : "",
         id: typeof token.id === "string" ? token.id : "",
         name: typeof token.displayName === "string" ? token.displayName : null,
-        updatedAt: parseTokenDate(token.updatedAt),
+        updatedAt,
       };
 
       return session;
