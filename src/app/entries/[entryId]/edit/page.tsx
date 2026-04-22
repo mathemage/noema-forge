@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
 import { JournalChrome } from "@/components/journal-chrome";
+import { signOutWithAuthJsCredentials } from "@/lib/auth/authjs-actions";
 import { JournalEntryForm } from "@/components/journal-entry-form";
 import { requireCurrentUser } from "@/lib/auth/current-user";
-import { readServerEnv } from "@/lib/env";
+import { readServerEnv, usesAuthJsCredentials } from "@/lib/env";
 import { getJournalEntry } from "@/lib/journal/service";
 import { getSingleSearchParam } from "@/lib/search-params";
 
@@ -28,6 +29,9 @@ export default async function EditEntryPage({
   }
 
   const env = readServerEnv();
+  const signOutAction = usesAuthJsCredentials(env)
+    ? signOutWithAuthJsCredentials
+    : "/auth/sign-out";
   const error = getSingleSearchParam((await searchParams).error);
 
   return (
@@ -42,6 +46,7 @@ export default async function EditEntryPage({
       }
       appName={env.NEXT_PUBLIC_APP_NAME}
       description="Refine the text while keeping the original entry history private and searchable."
+      signOutAction={signOutAction}
       title="Edit entry"
       userEmail={user.email}
     >

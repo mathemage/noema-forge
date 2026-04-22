@@ -1,4 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import type { NextAuthRequest } from "next-auth";
+import { auth } from "@/auth";
 import { getRequestUser } from "@/lib/auth/request";
 import { JournalError, updateJournalEntry } from "@/lib/journal/service";
 import { getRequestUrl } from "@/lib/request-url";
@@ -7,8 +9,8 @@ type EntryUpdateRouteContext = {
   params: Promise<{ entryId: string }>;
 };
 
-export async function POST(
-  request: NextRequest,
+async function handlePost(
+  request: NextAuthRequest,
   context: EntryUpdateRouteContext,
 ) {
   const user = await getRequestUser(request);
@@ -46,3 +48,5 @@ export async function POST(
     throw error;
   }
 }
+
+export const POST = auth(handlePost);

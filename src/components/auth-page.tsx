@@ -1,7 +1,14 @@
+import type { ComponentProps } from "react";
+
+type FormAction = NonNullable<ComponentProps<"form">["action"]>;
+
 type AuthPageProps = {
   appName: string;
   error?: string;
   message?: string;
+  registerAction: FormAction;
+  signInAction: FormAction;
+  useAuthJsCredentials: boolean;
 };
 
 const authErrorMessages: Record<string, string> = {
@@ -15,7 +22,14 @@ const authMessages: Record<string, string> = {
   "signed-out": "You have been signed out.",
 };
 
-export function AuthPage({ appName, error, message }: AuthPageProps) {
+export function AuthPage({
+  appName,
+  error,
+  message,
+  registerAction,
+  signInAction,
+  useAuthJsCredentials,
+}: AuthPageProps) {
   const notice = (error && authErrorMessages[error]) || (message && authMessages[message]);
 
   return (
@@ -55,10 +69,13 @@ export function AuthPage({ appName, error, message }: AuthPageProps) {
             </h2>
             <p className="text-sm leading-6 text-muted sm:text-base">
               Start a private journal with an email address and password.
+              {useAuthJsCredentials
+                ? " When the optional Auth.js credentials mode is enabled, account creation still uses the same journal user record before handing session management to Auth.js."
+                : ""}
             </p>
           </div>
 
-          <form action="/auth/register" className="mt-6 space-y-4" method="post">
+          <form action={registerAction} className="mt-6 space-y-4" method="post">
             <label className="block space-y-2 text-sm font-medium text-foreground">
               <span>Email</span>
               <input
@@ -96,10 +113,13 @@ export function AuthPage({ appName, error, message }: AuthPageProps) {
             </h2>
             <p className="text-sm leading-6 text-muted sm:text-base">
               Pick up where you left off and search your journal history.
+              {useAuthJsCredentials
+                ? " This environment is using the optional Auth.js credentials session path."
+                : ""}
             </p>
           </div>
 
-          <form action="/auth/sign-in" className="mt-6 space-y-4" method="post">
+          <form action={signInAction} className="mt-6 space-y-4" method="post">
             <label className="block space-y-2 text-sm font-medium text-foreground">
               <span>Email</span>
               <input

@@ -2,8 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { EntryMetadata } from "@/components/entry-metadata";
 import { JournalChrome } from "@/components/journal-chrome";
+import { signOutWithAuthJsCredentials } from "@/lib/auth/authjs-actions";
 import { requireCurrentUser } from "@/lib/auth/current-user";
-import { readServerEnv } from "@/lib/env";
+import { readServerEnv, usesAuthJsCredentials } from "@/lib/env";
 import { getJournalEntry } from "@/lib/journal/service";
 import { getSingleSearchParam } from "@/lib/search-params";
 
@@ -30,6 +31,9 @@ export default async function EntryDetailPage({
   }
 
   const env = readServerEnv();
+  const signOutAction = usesAuthJsCredentials(env)
+    ? signOutWithAuthJsCredentials
+    : "/auth/sign-out";
   const message = getSingleSearchParam((await searchParams).message);
 
   return (
@@ -52,6 +56,7 @@ export default async function EntryDetailPage({
       }
       appName={env.NEXT_PUBLIC_APP_NAME}
       description="Review the full text and metadata for a typed journal entry."
+      signOutAction={signOutAction}
       title="Entry detail"
       userEmail={user.email}
     >

@@ -1,10 +1,13 @@
-import type { ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
+
+type FormAction = NonNullable<ComponentProps<"form">["action"]>;
 
 type JournalChromeProps = {
   actions?: ReactNode;
   appName: string;
   children: ReactNode;
   description: string;
+  signOutAction: FormAction;
   title: string;
   userEmail: string;
 };
@@ -14,6 +17,7 @@ export function JournalChrome({
   appName,
   children,
   description,
+  signOutAction,
   title,
   userEmail,
 }: JournalChromeProps) {
@@ -41,7 +45,7 @@ export function JournalChrome({
           <div className="rounded-2xl border border-border bg-slate-50/80 p-4 text-sm text-slate-700">
             <p className="font-medium text-slate-900">Signed in as</p>
             <p className="mt-1 break-all">{userEmail}</p>
-            <form action="/auth/sign-out" className="mt-4" method="post">
+            <form action={signOutAction} className="mt-4" method="post">
               <button
                 className="inline-flex items-center justify-center rounded-full border border-border bg-white px-4 py-2 font-medium text-foreground transition hover:bg-slate-100"
                 type="submit"

@@ -10,6 +10,9 @@ describe("AuthPage", () => {
         appName="NoemaForge"
         error="invalid-credentials"
         message={undefined}
+        registerAction="/auth/register"
+        signInAction="/auth/sign-in"
+        useAuthJsCredentials={true}
       />,
     );
 
@@ -24,6 +27,11 @@ describe("AuthPage", () => {
     expect(screen.getByRole("heading", { name: "Sign in" })).toBeInTheDocument();
     expect(
       screen.getByText("Check your email and password, then try again."),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /This environment is using the optional Auth\.js credentials session path\./,
+      ),
     ).toBeInTheDocument();
   });
 });
