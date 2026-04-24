@@ -35,9 +35,14 @@ test("mobile layout keeps multimodal capture and history usable", async ({ page 
 
   await expect(page.getByRole("heading", { name: "Journal history" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "New journal entry" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Guided reflection" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Voice dictation" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Handwriting OCR" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Search" })).toBeVisible();
+  await expect(page.locator('form[action="/entries"]')).toHaveAttribute(
+    "data-ready",
+    "true",
+  );
 
   await page.locator('form[action="/entries"] textarea[name="body"]').fill(entryText);
   await page.getByRole("button", { name: "Save entry" }).click();

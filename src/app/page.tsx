@@ -34,7 +34,7 @@ export default async function Home({ searchParams }: HomePageProps) {
   return (
     <JournalChrome
       appName={env.NEXT_PUBLIC_APP_NAME}
-      description="Capture typed thoughts, voice dictation, or handwriting OCR and keep every entry in one private, searchable journal."
+      description="Capture raw thoughts, distill them into guided reflections, and keep every entry in one private, searchable journal."
       signOutAction={signOutAction}
       title="Journal history"
       userEmail={user.email}
@@ -43,7 +43,7 @@ export default async function Home({ searchParams }: HomePageProps) {
         <JournalCaptureForm
           action="/entries"
           key="new-entry"
-          description="Type directly, dictate with your browser, or upload a handwritten note image. Review the extracted text before saving it into the archive."
+          description="Type directly, dictate with your browser, or upload a handwritten note image. Then clarify the feeling, root issue, and next step before saving."
           error={error ? homeErrorMessages[error] : undefined}
           heading="New journal entry"
           submitLabel="Save entry"

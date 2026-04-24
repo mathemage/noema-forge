@@ -15,6 +15,16 @@ function getSourceInput() {
   return input;
 }
 
+function getHiddenInputValue(name: string) {
+  const input = document.querySelector(`input[name="${name}"]`);
+
+  if (!(input instanceof HTMLInputElement)) {
+    throw new Error(`Expected hidden ${name} input to be present.`);
+  }
+
+  return input.value;
+}
+
 function createRecognitionStub() {
   return {
     continuous: false,
@@ -27,6 +37,10 @@ function createRecognitionStub() {
     stop: vi.fn(),
   };
 }
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 describe("JournalCaptureForm", () => {
   it("captures dictated text into the shared editor", async () => {
@@ -185,5 +199,55 @@ describe("JournalCaptureForm", () => {
     await waitFor(() =>
       expect(screen.getByLabelText("Entry")).not.toHaveAttribute("readonly"),
     );
+  });
+
+  it("requests reflection assistance from the current draft", async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          followUpQuestion: "What would make this easier to start?",
+          message: "Ollama is not configured, so local reflection guidance was used.",
+          source: "fallback",
+          suggestions: ["Open the draft.", "Write one imperfect sentence."],
+        }),
+        { status: 200 },
+      ),
+    );
+    vi.stubGlobal("fetch", fetchImpl);
+    const user = userEvent.setup();
+
+    render(
+      <JournalCaptureForm
+        action="/entries"
+        description="Create a new entry"
+        heading="New journal entry"
+        submitLabel="Save entry"
+      />,
+    );
+
+    await user.type(screen.getByLabelText("Entry"), "A raw draft");
+    await user.type(screen.getByLabelText("Feeling"), "Tense");
+    await user.type(screen.getByLabelText("Root issue"), "Unclear priority");
+    await user.type(screen.getByLabelText("Next step"), "Open the document");
+    await user.click(screen.getByRole("button", { name: "Get reflection prompt" }));
+
+    await screen.findByText("What would make this easier to start?");
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "/api/reflection/assist",
+      expect.objectContaining({
+        body: JSON.stringify({
+          body: "A raw draft",
+          feeling: "Tense",
+          nextStep: "Open the document",
+          rootIssue: "Unclear priority",
+        }),
+        method: "POST",
+      }),
+    );
+    expect(getHiddenInputValue("followUpQuestion")).toBe(
+      "What would make this easier to start?",
+    );
+    expect(screen.getByText("Open the draft.")).toBeInTheDocument();
   });
 });

@@ -125,6 +125,62 @@ describe("POST /entries", () => {
     );
   });
 
+  it("composes guided reflection fields into the saved entry body", async () => {
+    vi.mocked(getRequestUser).mockResolvedValue({
+      createdAt: new Date(),
+      displayName: null,
+      email: "user@example.com",
+      id: "user-1",
+      updatedAt: new Date(),
+    });
+    vi.mocked(createJournalEntry).mockResolvedValue({
+      body: "Raw capture:\nA raw entry",
+      createdAt: new Date(),
+      id: "entry-3",
+      source: "typed",
+      updatedAt: new Date(),
+      userId: "user-1",
+    });
+
+    const formData = new FormData();
+    formData.set("body", "A raw entry");
+    formData.set("feeling", "Tense");
+    formData.set("rootIssue", "Unclear priority");
+    formData.set("nextStep", "Write one sentence");
+    formData.set("followUpQuestion", "What matters most?");
+    formData.append("suggestions", "Set a timer.");
+    formData.append("suggestions", "Open the draft.");
+
+    const response = await POST(
+      new NextRequest("http://127.0.0.1:3000/entries", {
+        body: formData,
+        method: "POST",
+      }),
+    );
+    const location = new URL(response.headers.get("location") ?? "");
+
+    expect(response.status).toBe(303);
+    expect(location.pathname).toBe("/entries/entry-3");
+    expect(createJournalEntry).toHaveBeenCalledWith(
+      {
+        body: [
+          "Raw capture:\nA raw entry",
+          "Guided reflection:",
+          "Feeling:\nTense",
+          "Root issue:\nUnclear priority",
+          "Next step:\nWrite one sentence",
+          [
+            "Ollama assist:",
+            "Follow-up question:\nWhat matters most?",
+            "Suggestions:\n- Set a timer.\n- Open the draft.",
+          ].join("\n\n"),
+        ].join("\n\n"),
+        source: undefined,
+      },
+      "user-1",
+    );
+  });
+
   it("redirects back to the journal when entry validation fails", async () => {
     vi.mocked(getRequestUser).mockResolvedValue({
       createdAt: new Date(),

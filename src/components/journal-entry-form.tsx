@@ -1,7 +1,3 @@
-"use client";
-
-import { useState } from "react";
-
 type JournalEntryFormProps = {
   action: string;
   body?: string;
@@ -21,8 +17,6 @@ export function JournalEntryForm({
   heading,
   submitLabel,
 }: JournalEntryFormProps) {
-  const [entryBody, setEntryBody] = useState(body ?? "");
-
   return (
     <section className="rounded-3xl border border-border/80 bg-card/95 p-6 shadow-sm sm:p-8">
       <div className="space-y-2">
@@ -45,13 +39,12 @@ export function JournalEntryForm({
           </label>
           <textarea
             className="min-h-56 w-full rounded-3xl border border-border bg-white px-4 py-3 text-base text-foreground outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-200"
+            defaultValue={body ?? ""}
             id="body"
             maxLength={20_000}
             name="body"
-            onChange={(event) => setEntryBody(event.target.value)}
             placeholder="Write or review the journal text you want to keep."
             required
-            value={entryBody}
           />
           <p className="text-xs leading-5 text-muted">
             Saved entries keep the original capture source plus created and updated
