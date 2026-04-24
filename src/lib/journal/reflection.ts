@@ -1,4 +1,5 @@
 export type GuidedReflectionInput = {
+  assistanceSource?: "fallback" | "ollama";
   body: string;
   feeling?: string;
   followUpQuestion?: string;
@@ -13,6 +14,18 @@ function normalizeText(value: string | undefined) {
 
 function normalizeSuggestions(suggestions: string[] | undefined) {
   return (suggestions ?? []).map(normalizeText).filter(Boolean).slice(0, 3);
+}
+
+function formatAssistanceSource(source: GuidedReflectionInput["assistanceSource"]) {
+  if (source === "ollama") {
+    return "Ollama assist";
+  }
+
+  if (source === "fallback") {
+    return "Local guidance";
+  }
+
+  return "Reflection assist";
 }
 
 export function hasGuidedReflection(input: GuidedReflectionInput) {
@@ -32,6 +45,10 @@ export function composeJournalEntryBody(input: GuidedReflectionInput) {
   const nextStep = normalizeText(input.nextStep);
   const followUpQuestion = normalizeText(input.followUpQuestion);
   const suggestions = normalizeSuggestions(input.suggestions);
+
+  if (!body) {
+    return body;
+  }
 
   if (!hasGuidedReflection(input)) {
     return body;
@@ -54,7 +71,7 @@ export function composeJournalEntryBody(input: GuidedReflectionInput) {
   if (followUpQuestion || suggestions.length) {
     sections.push(
       [
-        "Ollama assist:",
+        `${formatAssistanceSource(input.assistanceSource)}:`,
         followUpQuestion ? `Follow-up question:\n${followUpQuestion}` : null,
         suggestions.length
           ? `Suggestions:\n${suggestions.map((suggestion) => `- ${suggestion}`).join("\n")}`

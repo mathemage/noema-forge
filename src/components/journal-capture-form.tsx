@@ -157,6 +157,11 @@ export function JournalCaptureForm({
     };
   }, []);
 
+  const clearAssistance = () => {
+    setAssistance(null);
+    setAssistError(null);
+  };
+
   const stopDictation = (reason: "manual" | "mode-switch" = "manual") => {
     if (!recognitionRef.current) {
       return;
@@ -211,6 +216,7 @@ export function JournalCaptureForm({
         (_, index) => event.results[index]?.[0]?.transcript ?? "",
       ).join(" ");
 
+      clearAssistance();
       setEntryBody(appendCaptureText(dictationBaseTextRef.current, transcript));
     };
 
@@ -262,6 +268,7 @@ export function JournalCaptureForm({
 
     const requestId = ocrRequestIdRef.current + 1;
     ocrRequestIdRef.current = requestId;
+    clearAssistance();
     setSource("ocr");
     setOcrError(null);
     setOcrMessage(`Reading ${file.name}...`);
@@ -464,7 +471,10 @@ export function JournalCaptureForm({
             id="body"
             maxLength={20_000}
             name="body"
-            onChange={(event) => setEntryBody(event.target.value)}
+            onChange={(event) => {
+              clearAssistance();
+              setEntryBody(event.target.value);
+            }}
             placeholder="Write or review the journal text you want to keep."
             readOnly={isDictating || isOcrProcessing}
             required
@@ -507,7 +517,10 @@ export function JournalCaptureForm({
                 id="feeling"
                 maxLength={2_000}
                 name="feeling"
-                onChange={(event) => setFeeling(event.target.value)}
+                onChange={(event) => {
+                  clearAssistance();
+                  setFeeling(event.target.value);
+                }}
                 placeholder="What feeling is most present?"
                 value={feeling}
               />
@@ -520,7 +533,10 @@ export function JournalCaptureForm({
                 id="rootIssue"
                 maxLength={2_000}
                 name="rootIssue"
-                onChange={(event) => setRootIssue(event.target.value)}
+                onChange={(event) => {
+                  clearAssistance();
+                  setRootIssue(event.target.value);
+                }}
                 placeholder="What seems to be underneath it?"
                 value={rootIssue}
               />
@@ -533,7 +549,10 @@ export function JournalCaptureForm({
                 id="nextStep"
                 maxLength={2_000}
                 name="nextStep"
-                onChange={(event) => setNextStep(event.target.value)}
+                onChange={(event) => {
+                  clearAssistance();
+                  setNextStep(event.target.value);
+                }}
                 placeholder="What is one concrete move?"
                 value={nextStep}
               />
@@ -579,6 +598,11 @@ export function JournalCaptureForm({
                     ))}
                   </ul>
                 </div>
+                <input
+                  name="assistanceSource"
+                  type="hidden"
+                  value={assistance.source}
+                />
                 <input
                   name="followUpQuestion"
                   type="hidden"

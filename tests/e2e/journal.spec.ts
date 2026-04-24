@@ -68,6 +68,7 @@ test("desktop user can register, create, edit, search, sign out, and sign back i
   await expect(page).toHaveURL(/\/entries\/.+\?message=created$/);
   await expect(page.getByText(initialEntry)).toBeVisible();
   await expect(page.getByText("Guided reflection:")).toBeVisible();
+  await expect(page.getByText("Local guidance:")).toBeVisible();
   await expect(page.getByText(feeling)).toBeVisible();
   await expect(page.getByText(rootIssue)).toBeVisible();
   await expect(page.getByText(nextStep)).toBeVisible();

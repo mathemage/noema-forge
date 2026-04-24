@@ -248,6 +248,44 @@ describe("JournalCaptureForm", () => {
     expect(getHiddenInputValue("followUpQuestion")).toBe(
       "What would make this easier to start?",
     );
+    expect(getHiddenInputValue("assistanceSource")).toBe("fallback");
     expect(screen.getByText("Open the draft.")).toBeInTheDocument();
+  });
+
+  it("clears generated reflection assistance when the draft changes", async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          followUpQuestion: "What would make this easier to start?",
+          message: "Ollama generated a narrow follow-up question and next steps.",
+          source: "ollama",
+          suggestions: ["Open the draft.", "Write one imperfect sentence."],
+        }),
+        { status: 200 },
+      ),
+    );
+    vi.stubGlobal("fetch", fetchImpl);
+    const user = userEvent.setup();
+
+    render(
+      <JournalCaptureForm
+        action="/entries"
+        description="Create a new entry"
+        heading="New journal entry"
+        submitLabel="Save entry"
+      />,
+    );
+
+    await user.type(screen.getByLabelText("Entry"), "A raw draft");
+    await user.click(screen.getByRole("button", { name: "Get reflection prompt" }));
+    await screen.findByText("What would make this easier to start?");
+
+    await user.type(screen.getByLabelText("Entry"), " changed");
+
+    expect(
+      screen.queryByText("What would make this easier to start?"),
+    ).not.toBeInTheDocument();
+    expect(document.querySelector('input[name="followUpQuestion"]')).toBeNull();
+    expect(document.querySelector('input[name="assistanceSource"]')).toBeNull();
   });
 });

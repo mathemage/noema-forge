@@ -13,6 +13,7 @@ describe("guided reflection composition", () => {
 
   it("composes raw capture, manual reflection, and assistance into one entry", () => {
     const result = composeJournalEntryBody({
+      assistanceSource: "fallback",
       body: "I keep postponing the hard email.",
       feeling: "Avoidant and tense",
       followUpQuestion: "What would make the email safe enough to send?",
@@ -29,12 +30,33 @@ describe("guided reflection composition", () => {
         "Root issue:\nI do not want to disappoint the recipient.",
         "Next step:\nDraft the first three sentences.",
         [
-          "Ollama assist:",
+          "Local guidance:",
           "Follow-up question:\nWhat would make the email safe enough to send?",
           "Suggestions:\n- Open the thread.\n- Write a bad first draft.",
         ].join("\n\n"),
       ].join("\n\n"),
     );
+  });
+
+  it("keeps empty raw capture invalid even when reflection fields are present", () => {
+    expect(
+      composeJournalEntryBody({
+        body: "",
+        feeling: "Tense",
+        rootIssue: "Unclear priority",
+      }),
+    ).toBe("");
+  });
+
+  it("labels Ollama-sourced assistance accurately", () => {
+    expect(
+      composeJournalEntryBody({
+        assistanceSource: "ollama",
+        body: "Raw thought",
+        followUpQuestion: "What matters now?",
+        suggestions: ["Choose one action.", "Write it down."],
+      }),
+    ).toContain("Ollama assist:");
   });
 
   it("detects reflection when only suggestions are present", () => {

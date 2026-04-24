@@ -16,7 +16,12 @@ async function handlePost(request: NextAuthRequest) {
 
   const formData = await request.formData();
   const source = formData.get("source");
+  const assistanceSource = formData.get("assistanceSource");
   const body = composeJournalEntryBody({
+    assistanceSource:
+      assistanceSource === "fallback" || assistanceSource === "ollama"
+        ? assistanceSource
+        : undefined,
     body: String(formData.get("body") ?? ""),
     feeling: String(formData.get("feeling") ?? ""),
     followUpQuestion: String(formData.get("followUpQuestion") ?? ""),

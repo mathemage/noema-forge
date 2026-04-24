@@ -147,6 +147,7 @@ describe("POST /entries", () => {
     formData.set("feeling", "Tense");
     formData.set("rootIssue", "Unclear priority");
     formData.set("nextStep", "Write one sentence");
+    formData.set("assistanceSource", "fallback");
     formData.set("followUpQuestion", "What matters most?");
     formData.append("suggestions", "Set a timer.");
     formData.append("suggestions", "Open the draft.");
@@ -170,13 +171,46 @@ describe("POST /entries", () => {
           "Root issue:\nUnclear priority",
           "Next step:\nWrite one sentence",
           [
-            "Ollama assist:",
+            "Local guidance:",
             "Follow-up question:\nWhat matters most?",
             "Suggestions:\n- Set a timer.\n- Open the draft.",
           ].join("\n\n"),
         ].join("\n\n"),
         source: undefined,
       },
+      "user-1",
+    );
+  });
+
+  it("does not let reflection fields satisfy the raw entry requirement", async () => {
+    vi.mocked(getRequestUser).mockResolvedValue({
+      createdAt: new Date(),
+      displayName: null,
+      email: "user@example.com",
+      id: "user-1",
+      updatedAt: new Date(),
+    });
+    vi.mocked(createJournalEntry).mockRejectedValue(
+      new JournalError("invalid-input"),
+    );
+
+    const formData = new FormData();
+    formData.set("body", "");
+    formData.set("feeling", "Tense");
+
+    const response = await POST(
+      new NextRequest("http://127.0.0.1:3000/entries", {
+        body: formData,
+        method: "POST",
+      }),
+    );
+    const location = new URL(response.headers.get("location") ?? "");
+
+    expect(response.status).toBe(303);
+    expect(location.pathname).toBe("/");
+    expect(location.search).toBe("?error=invalid-input");
+    expect(createJournalEntry).toHaveBeenCalledWith(
+      { body: "", source: undefined },
       "user-1",
     );
   });
