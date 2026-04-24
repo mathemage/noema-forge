@@ -3,6 +3,7 @@ import type { NextAuthRequest } from "next-auth";
 import { auth } from "@/auth";
 import { getRequestUser } from "@/lib/auth/request";
 import { isCaptureSource } from "@/lib/journal/capture-source";
+import { JOURNAL_ENTRY_BODY_MAX_LENGTH } from "@/lib/journal/limits";
 import { composeJournalEntryBody } from "@/lib/journal/reflection";
 import { JournalError, createJournalEntry } from "@/lib/journal/service";
 import { getRequestUrl } from "@/lib/request-url";
@@ -29,6 +30,10 @@ async function handlePost(request: NextAuthRequest) {
     rootIssue: String(formData.get("rootIssue") ?? ""),
     suggestions: formData.getAll("suggestions").map(String),
   });
+
+  if (body.length > JOURNAL_ENTRY_BODY_MAX_LENGTH) {
+    return NextResponse.redirect(getRequestUrl("/?error=entry-too-long"), 303);
+  }
 
   try {
     const entry = await createJournalEntry(

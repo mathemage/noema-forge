@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
 
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 import { JournalCaptureForm } from "@/components/journal-capture-form";
+import { JOURNAL_ENTRY_BODY_MAX_LENGTH } from "@/lib/journal/limits";
 
 function getSourceInput() {
   const input = document.querySelector('input[name="source"]');
@@ -287,5 +288,73 @@ describe("JournalCaptureForm", () => {
     ).not.toBeInTheDocument();
     expect(document.querySelector('input[name="followUpQuestion"]')).toBeNull();
     expect(document.querySelector('input[name="assistanceSource"]')).toBeNull();
+  });
+
+  it("ignores stale reflection assistance that resolves after edits", async () => {
+    let resolveResponse: ((response: Response) => void) | null = null;
+    const fetchImpl = vi.fn<typeof fetch>().mockReturnValue(
+      new Promise<Response>((resolve) => {
+        resolveResponse = resolve;
+      }),
+    );
+    vi.stubGlobal("fetch", fetchImpl);
+    const user = userEvent.setup();
+
+    render(
+      <JournalCaptureForm
+        action="/entries"
+        description="Create a new entry"
+        heading="New journal entry"
+        submitLabel="Save entry"
+      />,
+    );
+
+    await user.type(screen.getByLabelText("Entry"), "A raw draft");
+    await user.click(screen.getByRole("button", { name: "Get reflection prompt" }));
+    await user.type(screen.getByLabelText("Entry"), " changed");
+
+    await act(async () => {
+      resolveResponse?.(
+        new Response(
+          JSON.stringify({
+            followUpQuestion: "What would make this easier to start?",
+            message: "Ollama generated a narrow follow-up question and next steps.",
+            source: "ollama",
+            suggestions: ["Open the draft.", "Write one imperfect sentence."],
+          }),
+          { status: 200 },
+        ),
+      );
+    });
+
+    expect(
+      screen.queryByText("What would make this easier to start?"),
+    ).not.toBeInTheDocument();
+    expect(document.querySelector('input[name="followUpQuestion"]')).toBeNull();
+    expect(document.querySelector('input[name="assistanceSource"]')).toBeNull();
+    expect(screen.getByRole("button", { name: "Get reflection prompt" })).toBeEnabled();
+  });
+
+  it("warns before submitting a composed reflection that is too long", () => {
+    render(
+      <JournalCaptureForm
+        action="/entries"
+        description="Create a new entry"
+        heading="New journal entry"
+        submitLabel="Save entry"
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("Entry"), {
+      target: { value: "a".repeat(JOURNAL_ENTRY_BODY_MAX_LENGTH) },
+    });
+    fireEvent.change(screen.getByLabelText("Feeling"), {
+      target: { value: "Tense" },
+    });
+
+    expect(
+      screen.getByText(/Shorten the raw entry or reflection before saving\./),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Save entry" })).toBeDisabled();
   });
 });

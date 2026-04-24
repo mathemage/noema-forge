@@ -6,6 +6,11 @@ import {
   type CaptureSource,
   formatCaptureSource,
 } from "@/lib/journal/capture-source";
+import {
+  JOURNAL_ENTRY_BODY_MAX_LENGTH,
+  REFLECTION_FIELD_MAX_LENGTH,
+} from "@/lib/journal/limits";
+import { composeJournalEntryBody } from "@/lib/journal/reflection";
 import type { ReflectionAssistance } from "@/lib/journal/reflection-assist";
 
 type BrowserSpeechRecognitionResult = {
@@ -147,6 +152,7 @@ export function JournalCaptureForm({
   const dictationBaseTextRef = useRef("");
   const dictationStopReasonRef = useRef<"manual" | "mode-switch" | null>(null);
   const voiceFailedRef = useRef(false);
+  const assistRequestIdRef = useRef(0);
   const ocrRequestIdRef = useRef(0);
 
   useEffect(() => {
@@ -158,8 +164,10 @@ export function JournalCaptureForm({
   }, []);
 
   const clearAssistance = () => {
+    assistRequestIdRef.current += 1;
     setAssistance(null);
     setAssistError(null);
+    setIsRequestingAssist(false);
   };
 
   const stopDictation = (reason: "manual" | "mode-switch" = "manual") => {
@@ -320,6 +328,8 @@ export function JournalCaptureForm({
       return;
     }
 
+    const requestId = assistRequestIdRef.current + 1;
+    assistRequestIdRef.current = requestId;
     setIsRequestingAssist(true);
     setAssistError(null);
 
@@ -341,16 +351,36 @@ export function JournalCaptureForm({
         throw new Error("Reflection assistance request failed.");
       }
 
-      setAssistance((await response.json()) as ReflectionAssistance);
+      const nextAssistance = (await response.json()) as ReflectionAssistance;
+
+      if (assistRequestIdRef.current === requestId) {
+        setAssistance(nextAssistance);
+      }
     } catch {
-      setAssistance(null);
-      setAssistError(
-        "Reflection assistance is unavailable. You can still complete the fields manually.",
-      );
+      if (assistRequestIdRef.current === requestId) {
+        setAssistance(null);
+        setAssistError(
+          "Reflection assistance is unavailable. You can still complete the fields manually.",
+        );
+      }
     } finally {
-      setIsRequestingAssist(false);
+      if (assistRequestIdRef.current === requestId) {
+        setIsRequestingAssist(false);
+      }
     }
   };
+
+  const composedEntryBody = composeJournalEntryBody({
+    assistanceSource: assistance?.source,
+    body: entryBody,
+    feeling,
+    followUpQuestion: assistance?.followUpQuestion,
+    nextStep,
+    rootIssue,
+    suggestions: assistance?.suggestions,
+  });
+  const isComposedEntryTooLong =
+    composedEntryBody.length > JOURNAL_ENTRY_BODY_MAX_LENGTH;
 
   return (
     <section className="rounded-3xl border border-border/80 bg-card/95 p-6 shadow-sm sm:p-8">
@@ -469,7 +499,7 @@ export function JournalCaptureForm({
           <textarea
             className="min-h-56 w-full rounded-3xl border border-border bg-white px-4 py-3 text-base text-foreground outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-200"
             id="body"
-            maxLength={20_000}
+            maxLength={JOURNAL_ENTRY_BODY_MAX_LENGTH}
             name="body"
             onChange={(event) => {
               clearAssistance();
@@ -496,6 +526,13 @@ export function JournalCaptureForm({
           {voiceError && source !== "voice" ? (
             <p className="text-xs leading-5 text-rose-700">{voiceError}</p>
           ) : null}
+          {isComposedEntryTooLong ? (
+            <p className="text-xs leading-5 text-rose-700">
+              Shorten the raw entry or reflection before saving. The saved text
+              would be {composedEntryBody.length.toLocaleString()} characters,
+              over the 20,000-character limit.
+            </p>
+          ) : null}
         </div>
 
         <section className="space-y-4 rounded-3xl border border-border bg-slate-50/70 p-4">
@@ -515,7 +552,7 @@ export function JournalCaptureForm({
               <textarea
                 className="min-h-28 w-full rounded-3xl border border-border bg-white px-4 py-3 text-sm text-foreground outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-200"
                 id="feeling"
-                maxLength={2_000}
+                maxLength={REFLECTION_FIELD_MAX_LENGTH}
                 name="feeling"
                 onChange={(event) => {
                   clearAssistance();
@@ -531,7 +568,7 @@ export function JournalCaptureForm({
               <textarea
                 className="min-h-28 w-full rounded-3xl border border-border bg-white px-4 py-3 text-sm text-foreground outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-200"
                 id="rootIssue"
-                maxLength={2_000}
+                maxLength={REFLECTION_FIELD_MAX_LENGTH}
                 name="rootIssue"
                 onChange={(event) => {
                   clearAssistance();
@@ -547,7 +584,7 @@ export function JournalCaptureForm({
               <textarea
                 className="min-h-28 w-full rounded-3xl border border-border bg-white px-4 py-3 text-sm text-foreground outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-200"
                 id="nextStep"
-                maxLength={2_000}
+                maxLength={REFLECTION_FIELD_MAX_LENGTH}
                 name="nextStep"
                 onChange={(event) => {
                   clearAssistance();
@@ -627,7 +664,8 @@ export function JournalCaptureForm({
 
         <div className="flex flex-wrap items-center gap-3">
           <button
-            className="inline-flex items-center justify-center rounded-full bg-slate-950 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800"
+            className="inline-flex items-center justify-center rounded-full bg-slate-950 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={isComposedEntryTooLong}
             type="submit"
           >
             {submitLabel}

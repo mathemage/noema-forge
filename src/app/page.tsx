@@ -16,6 +16,7 @@ type HomePageProps = {
 };
 
 const homeErrorMessages: Record<string, string> = {
+  "entry-too-long": "Shorten the entry or reflection before saving. The saved journal text must be 20,000 characters or fewer.",
   "invalid-input": "Write something before saving your entry.",
   "not-found": "That entry is no longer available.",
 };
