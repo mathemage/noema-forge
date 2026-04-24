@@ -1,5 +1,6 @@
 import type { JournalEntryRecord } from "@/lib/journal/service";
 import { formatTimestamp } from "@/lib/formatting";
+import { formatCaptureSource } from "@/lib/journal/capture-source";
 
 type EntryMetadataProps = Pick<JournalEntryRecord, "createdAt" | "source" | "updatedAt">;
 
@@ -24,7 +25,7 @@ export function EntryMetadata({
       </div>
       <div className="rounded-2xl border border-border bg-slate-50/70 p-3">
         <dt className="font-medium text-foreground">Source</dt>
-        <dd className="mt-1 capitalize">{source}</dd>
+        <dd className="mt-1">{formatCaptureSource(source)}</dd>
       </div>
     </dl>
   );

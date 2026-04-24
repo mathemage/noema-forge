@@ -55,7 +55,7 @@ export default async function EntryDetailPage({
         </>
       }
       appName={env.NEXT_PUBLIC_APP_NAME}
-      description="Review the full text and metadata for a typed journal entry."
+      description="Review the full text and metadata for a journal entry from any capture mode."
       signOutAction={signOutAction}
       title="Entry detail"
       userEmail={user.email}

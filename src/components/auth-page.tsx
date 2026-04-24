@@ -40,11 +40,12 @@ export function AuthPage({
             {appName}
           </p>
           <h1 className="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
-            Private typed capture, ready when you are.
+            Private multimodal capture, ready when you are.
           </h1>
           <p className="max-w-2xl text-base leading-7 text-muted sm:text-lg">
             Create a journal account or sign in to keep a private archive of typed
-            entries, searchable history, and clear edit flows.
+            notes, voice dictation, handwriting OCR, searchable history, and clear
+            edit flows.
           </p>
         </div>
       </section>

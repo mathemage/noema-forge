@@ -18,7 +18,7 @@ function createCredentials() {
   };
 }
 
-test("mobile layout keeps typed capture and history usable", async ({ page }) => {
+test("mobile layout keeps multimodal capture and history usable", async ({ page }) => {
   const credentials = createCredentials();
   const entryText = `Mobile journal entry ${credentials.uniqueId}`;
 
@@ -34,7 +34,9 @@ test("mobile layout keeps typed capture and history usable", async ({ page }) =>
     .click();
 
   await expect(page.getByRole("heading", { name: "Journal history" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "New typed entry" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "New journal entry" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Voice dictation" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Handwriting OCR" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Search" })).toBeVisible();
 
   await page.locator('form[action="/entries"] textarea[name="body"]').fill(entryText);

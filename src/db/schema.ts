@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import { index, integer, pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { captureSourceValues } from "@/lib/journal/capture-source";
 
 const createdAt = timestamp("created_at", { withTimezone: true })
   .defaultNow()
@@ -10,7 +11,7 @@ const updatedAt = timestamp("updated_at", { withTimezone: true })
   .$onUpdate(() => new Date())
   .notNull();
 
-export const captureSource = pgEnum("capture_source", ["typed", "voice", "ocr"]);
+export const captureSource = pgEnum("capture_source", captureSourceValues);
 export const uploadKind = pgEnum("upload_kind", ["audio", "image"]);
 
 export const users = pgTable("users", {

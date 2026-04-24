@@ -49,12 +49,12 @@ export function JournalEntryForm({
             maxLength={20_000}
             name="body"
             onChange={(event) => setEntryBody(event.target.value)}
-            placeholder="Type the raw thought, feeling, or note you want to keep."
+            placeholder="Write or review the journal text you want to keep."
             required
             value={entryBody}
           />
           <p className="text-xs leading-5 text-muted">
-            Saved entries keep the typed source label plus created and updated
+            Saved entries keep the original capture source plus created and updated
             timestamps.
           </p>
         </div>
