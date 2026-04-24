@@ -174,11 +174,13 @@ export function JournalCaptureForm({
     setSource(nextSource);
   };
 
+  const isOcrProcessing = ocrProgress !== null && ocrProgress < 1;
+
   const startDictation = () => {
     const recognition = createSpeechRecognition();
 
     if (!recognition) {
-      setSource("voice");
+      setSource("typed");
       setVoiceError(
         "This browser does not support live dictation yet. You can still type your entry.",
       );
@@ -408,7 +410,7 @@ export function JournalCaptureForm({
             name="body"
             onChange={(event) => setEntryBody(event.target.value)}
             placeholder="Write or review the journal text you want to keep."
-            readOnly={isDictating}
+            readOnly={isDictating || isOcrProcessing}
             required
             value={entryBody}
           />
@@ -419,6 +421,14 @@ export function JournalCaptureForm({
             <p className="text-xs leading-5 text-muted">
               Stop dictation before editing the text manually.
             </p>
+          ) : null}
+          {isOcrProcessing ? (
+            <p className="text-xs leading-5 text-muted">
+              Wait for OCR to finish before editing the extracted text.
+            </p>
+          ) : null}
+          {voiceError && source !== "voice" ? (
+            <p className="text-xs leading-5 text-rose-700">{voiceError}</p>
           ) : null}
         </div>
 

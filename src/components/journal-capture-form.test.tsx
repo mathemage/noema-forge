@@ -62,6 +62,30 @@ describe("JournalCaptureForm", () => {
     ).toBeInTheDocument();
   });
 
+  it("falls back to typed source when dictation is unavailable", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <JournalCaptureForm
+        action="/entries"
+        createSpeechRecognition={() => null}
+        description="Create a new entry"
+        heading="New journal entry"
+        submitLabel="Save entry"
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Voice dictation" }));
+    await user.click(screen.getByRole("button", { name: "Start dictation" }));
+
+    expect(getSourceInput()).toHaveValue("typed");
+    expect(
+      screen.getByText(
+        "This browser does not support live dictation yet. You can still type your entry.",
+      ),
+    ).toBeInTheDocument();
+  });
+
   it("stops active dictation when switching away from voice mode", async () => {
     const recognition = createRecognitionStub();
     const user = userEvent.setup();
@@ -120,5 +144,46 @@ describe("JournalCaptureForm", () => {
     expect(getSourceInput()).toHaveValue("ocr");
     expect(extractImageText).toHaveBeenCalledTimes(1);
     expect(screen.getByText(/Imported text from note\.png\./)).toBeInTheDocument();
+  });
+
+  it("keeps the editor read-only while OCR is in progress", async () => {
+    let releaseExtraction: (() => void) | null = null;
+    const extractImageText = vi
+      .fn<(file: File, onProgress: (progress: number) => void) => Promise<string>>()
+      .mockImplementation(
+        (_file, onProgress) =>
+          new Promise<string>((resolve) => {
+            onProgress(0.2);
+            releaseExtraction = () => resolve("OCR draft");
+          }),
+      );
+    const user = userEvent.setup();
+
+    render(
+      <JournalCaptureForm
+        action="/entries"
+        description="Create a new entry"
+        extractImageText={extractImageText}
+        heading="New journal entry"
+        submitLabel="Save entry"
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Handwriting OCR" }));
+    await user.upload(
+      screen.getByLabelText("Handwritten note image"),
+      new File(["note image"], "note.png", { type: "image/png" }),
+    );
+
+    expect(screen.getByLabelText("Entry")).toHaveAttribute("readonly");
+    expect(
+      screen.getByText("Wait for OCR to finish before editing the extracted text."),
+    ).toBeInTheDocument();
+
+    releaseExtraction?.();
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Entry")).not.toHaveAttribute("readonly"),
+    );
   });
 });
