@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
 
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 import { JournalCaptureForm } from "@/components/journal-capture-form";
+import { JOURNAL_ENTRY_BODY_MAX_LENGTH } from "@/lib/journal/limits";
 
 function getSourceInput() {
   const input = document.querySelector('input[name="source"]');
@@ -13,6 +14,16 @@ function getSourceInput() {
   }
 
   return input;
+}
+
+function getHiddenInputValue(name: string) {
+  const input = document.querySelector(`input[name="${name}"]`);
+
+  if (!(input instanceof HTMLInputElement)) {
+    throw new Error(`Expected hidden ${name} input to be present.`);
+  }
+
+  return input.value;
 }
 
 function createRecognitionStub() {
@@ -27,6 +38,10 @@ function createRecognitionStub() {
     stop: vi.fn(),
   };
 }
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 describe("JournalCaptureForm", () => {
   it("captures dictated text into the shared editor", async () => {
@@ -185,5 +200,161 @@ describe("JournalCaptureForm", () => {
     await waitFor(() =>
       expect(screen.getByLabelText("Entry")).not.toHaveAttribute("readonly"),
     );
+  });
+
+  it("requests reflection assistance from the current draft", async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          followUpQuestion: "What would make this easier to start?",
+          message: "Ollama is not configured, so local reflection guidance was used.",
+          source: "fallback",
+          suggestions: ["Open the draft.", "Write one imperfect sentence."],
+        }),
+        { status: 200 },
+      ),
+    );
+    vi.stubGlobal("fetch", fetchImpl);
+    const user = userEvent.setup();
+
+    render(
+      <JournalCaptureForm
+        action="/entries"
+        description="Create a new entry"
+        heading="New journal entry"
+        submitLabel="Save entry"
+      />,
+    );
+
+    await user.type(screen.getByLabelText("Entry"), "A raw draft");
+    await user.type(screen.getByLabelText("Feeling"), "Tense");
+    await user.type(screen.getByLabelText("Root issue"), "Unclear priority");
+    await user.type(screen.getByLabelText("Next step"), "Open the document");
+    await user.click(screen.getByRole("button", { name: "Get reflection prompt" }));
+
+    await screen.findByText("What would make this easier to start?");
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "/api/reflection/assist",
+      expect.objectContaining({
+        body: JSON.stringify({
+          body: "A raw draft",
+          feeling: "Tense",
+          nextStep: "Open the document",
+          rootIssue: "Unclear priority",
+        }),
+        method: "POST",
+      }),
+    );
+    expect(getHiddenInputValue("followUpQuestion")).toBe(
+      "What would make this easier to start?",
+    );
+    expect(getHiddenInputValue("assistanceSource")).toBe("fallback");
+    expect(screen.getByText("Open the draft.")).toBeInTheDocument();
+  });
+
+  it("clears generated reflection assistance when the draft changes", async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          followUpQuestion: "What would make this easier to start?",
+          message: "Ollama generated a narrow follow-up question and next steps.",
+          source: "ollama",
+          suggestions: ["Open the draft.", "Write one imperfect sentence."],
+        }),
+        { status: 200 },
+      ),
+    );
+    vi.stubGlobal("fetch", fetchImpl);
+    const user = userEvent.setup();
+
+    render(
+      <JournalCaptureForm
+        action="/entries"
+        description="Create a new entry"
+        heading="New journal entry"
+        submitLabel="Save entry"
+      />,
+    );
+
+    await user.type(screen.getByLabelText("Entry"), "A raw draft");
+    await user.click(screen.getByRole("button", { name: "Get reflection prompt" }));
+    await screen.findByText("What would make this easier to start?");
+
+    await user.type(screen.getByLabelText("Entry"), " changed");
+
+    expect(
+      screen.queryByText("What would make this easier to start?"),
+    ).not.toBeInTheDocument();
+    expect(document.querySelector('input[name="followUpQuestion"]')).toBeNull();
+    expect(document.querySelector('input[name="assistanceSource"]')).toBeNull();
+  });
+
+  it("ignores stale reflection assistance that resolves after edits", async () => {
+    let resolveResponse: ((response: Response) => void) | null = null;
+    const fetchImpl = vi.fn<typeof fetch>().mockReturnValue(
+      new Promise<Response>((resolve) => {
+        resolveResponse = resolve;
+      }),
+    );
+    vi.stubGlobal("fetch", fetchImpl);
+    const user = userEvent.setup();
+
+    render(
+      <JournalCaptureForm
+        action="/entries"
+        description="Create a new entry"
+        heading="New journal entry"
+        submitLabel="Save entry"
+      />,
+    );
+
+    await user.type(screen.getByLabelText("Entry"), "A raw draft");
+    await user.click(screen.getByRole("button", { name: "Get reflection prompt" }));
+    await user.type(screen.getByLabelText("Entry"), " changed");
+
+    await act(async () => {
+      resolveResponse?.(
+        new Response(
+          JSON.stringify({
+            followUpQuestion: "What would make this easier to start?",
+            message: "Ollama generated a narrow follow-up question and next steps.",
+            source: "ollama",
+            suggestions: ["Open the draft.", "Write one imperfect sentence."],
+          }),
+          { status: 200 },
+        ),
+      );
+    });
+
+    expect(
+      screen.queryByText("What would make this easier to start?"),
+    ).not.toBeInTheDocument();
+    expect(document.querySelector('input[name="followUpQuestion"]')).toBeNull();
+    expect(document.querySelector('input[name="assistanceSource"]')).toBeNull();
+    expect(screen.getByRole("button", { name: "Get reflection prompt" })).toBeEnabled();
+  });
+
+  it("warns before submitting a composed reflection that is too long", () => {
+    render(
+      <JournalCaptureForm
+        action="/entries"
+        description="Create a new entry"
+        heading="New journal entry"
+        submitLabel="Save entry"
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("Entry"), {
+      target: { value: "a".repeat(JOURNAL_ENTRY_BODY_MAX_LENGTH) },
+    });
+    fireEvent.change(screen.getByLabelText("Feeling"), {
+      target: { value: "Tense" },
+    });
+
+    expect(
+      screen.getByText(/Shorten the raw entry or reflection before saving\./),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Save entry" })).toBeDisabled();
   });
 });

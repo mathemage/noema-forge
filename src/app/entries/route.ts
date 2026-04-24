@@ -3,6 +3,8 @@ import type { NextAuthRequest } from "next-auth";
 import { auth } from "@/auth";
 import { getRequestUser } from "@/lib/auth/request";
 import { isCaptureSource } from "@/lib/journal/capture-source";
+import { JOURNAL_ENTRY_BODY_MAX_LENGTH } from "@/lib/journal/limits";
+import { composeJournalEntryBody } from "@/lib/journal/reflection";
 import { JournalError, createJournalEntry } from "@/lib/journal/service";
 import { getRequestUrl } from "@/lib/request-url";
 
@@ -15,11 +17,28 @@ async function handlePost(request: NextAuthRequest) {
 
   const formData = await request.formData();
   const source = formData.get("source");
+  const assistanceSource = formData.get("assistanceSource");
+  const body = composeJournalEntryBody({
+    assistanceSource:
+      assistanceSource === "fallback" || assistanceSource === "ollama"
+        ? assistanceSource
+        : undefined,
+    body: String(formData.get("body") ?? ""),
+    feeling: String(formData.get("feeling") ?? ""),
+    followUpQuestion: String(formData.get("followUpQuestion") ?? ""),
+    nextStep: String(formData.get("nextStep") ?? ""),
+    rootIssue: String(formData.get("rootIssue") ?? ""),
+    suggestions: formData.getAll("suggestions").map(String),
+  });
+
+  if (body.length > JOURNAL_ENTRY_BODY_MAX_LENGTH) {
+    return NextResponse.redirect(getRequestUrl("/?error=entry-too-long"), 303);
+  }
 
   try {
     const entry = await createJournalEntry(
       {
-        body: String(formData.get("body") ?? ""),
+        body,
         source:
           typeof source === "string" && isCaptureSource(source) ? source : undefined,
       },
