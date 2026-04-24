@@ -1,6 +1,7 @@
 export const captureSourceValues = ["typed", "voice", "ocr"] as const;
 
 export type CaptureSource = (typeof captureSourceValues)[number];
+
 const captureSourceSet = new Set<CaptureSource>(captureSourceValues);
 
 const captureSourceLabels: Record<CaptureSource, string> = {

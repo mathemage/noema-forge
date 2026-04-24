@@ -1,7 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState, type ChangeEvent, type ComponentProps } from "react";
-import { type CaptureSource, formatCaptureSource } from "@/lib/journal/capture-source";
+import {
+  captureSourceValues,
+  type CaptureSource,
+  formatCaptureSource,
+} from "@/lib/journal/capture-source";
 
 type BrowserSpeechRecognitionResult = {
   0: {
@@ -133,6 +137,7 @@ export function JournalCaptureForm({
   const [ocrProgress, setOcrProgress] = useState<number | null>(null);
   const recognitionRef = useRef<BrowserSpeechRecognition | null>(null);
   const dictationBaseTextRef = useRef("");
+  const dictationStopReasonRef = useRef<"manual" | "mode-switch" | null>(null);
   const voiceFailedRef = useRef(false);
   const ocrRequestIdRef = useRef(0);
 
@@ -142,8 +147,31 @@ export function JournalCaptureForm({
     };
   }, []);
 
-  const stopDictation = () => {
-    recognitionRef.current?.stop();
+  const stopDictation = (reason: "manual" | "mode-switch" = "manual") => {
+    if (!recognitionRef.current) {
+      return;
+    }
+
+    dictationStopReasonRef.current = reason;
+    setIsDictating(false);
+    recognitionRef.current.stop();
+  };
+
+  const selectSource = (nextSource: CaptureSource) => {
+    if (source === nextSource) {
+      return;
+    }
+
+    if (source === "voice" && nextSource !== "voice" && recognitionRef.current) {
+      stopDictation("mode-switch");
+    }
+
+    if (nextSource !== "voice") {
+      setVoiceError(null);
+      setVoiceMessage(null);
+    }
+
+    setSource(nextSource);
   };
 
   const startDictation = () => {
@@ -160,6 +188,7 @@ export function JournalCaptureForm({
 
     voiceFailedRef.current = false;
     dictationBaseTextRef.current = entryBody;
+    dictationStopReasonRef.current = null;
     recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = "en-US";
@@ -182,10 +211,17 @@ export function JournalCaptureForm({
     };
 
     recognition.onend = () => {
+      const stopReason = dictationStopReasonRef.current;
+
+      dictationStopReasonRef.current = null;
       setIsDictating(false);
       recognitionRef.current = null;
 
       if (!voiceFailedRef.current) {
+        if (stopReason === "mode-switch") {
+          return;
+        }
+
         setVoiceMessage("Dictation stopped. Review and edit the transcript before saving.");
       }
     };
@@ -273,8 +309,8 @@ export function JournalCaptureForm({
 
       <form action={action} className="mt-6 space-y-4" method="post">
         <div className="space-y-3">
-          <div className="flex flex-wrap gap-2" role="tablist" aria-label="Capture mode">
-            {(["typed", "voice", "ocr"] as const).map((mode) => {
+          <div aria-label="Capture mode" className="flex flex-wrap gap-2" role="group">
+            {captureSourceValues.map((mode) => {
               const active = source === mode;
 
               return (
@@ -286,7 +322,7 @@ export function JournalCaptureForm({
                       : "border border-border bg-white text-foreground hover:bg-slate-50"
                   }`}
                   key={mode}
-                  onClick={() => setSource(mode)}
+                  onClick={() => selectSource(mode)}
                   type="button"
                 >
                   {formatCaptureSource(mode)}
@@ -308,7 +344,14 @@ export function JournalCaptureForm({
                 <div className="flex flex-wrap items-center gap-3">
                   <button
                     className="inline-flex items-center justify-center rounded-full bg-slate-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
-                    onClick={isDictating ? stopDictation : startDictation}
+                    onClick={() => {
+                      if (isDictating) {
+                        stopDictation();
+                        return;
+                      }
+
+                      startDictation();
+                    }}
                     type="button"
                   >
                     {isDictating ? "Stop dictation" : "Start dictation"}
@@ -365,12 +408,18 @@ export function JournalCaptureForm({
             name="body"
             onChange={(event) => setEntryBody(event.target.value)}
             placeholder="Write or review the journal text you want to keep."
+            readOnly={isDictating}
             required
             value={entryBody}
           />
           <p className="text-xs leading-5 text-muted">
             Saved entries keep the original capture source plus created and updated timestamps.
           </p>
+          {isDictating ? (
+            <p className="text-xs leading-5 text-muted">
+              Stop dictation before editing the text manually.
+            </p>
+          ) : null}
         </div>
 
         <div className="flex flex-wrap items-center gap-3">

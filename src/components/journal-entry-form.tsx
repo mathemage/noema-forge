@@ -1,3 +1,5 @@
+"use client";
+
 type JournalEntryFormProps = {
   action: string;
   body?: string;
@@ -41,6 +43,7 @@ export function JournalEntryForm({
             className="min-h-56 w-full rounded-3xl border border-border bg-white px-4 py-3 text-base text-foreground outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-200"
             defaultValue={body}
             id="body"
+            key={body ?? ""}
             maxLength={20_000}
             name="body"
             placeholder="Write or review the journal text you want to keep."

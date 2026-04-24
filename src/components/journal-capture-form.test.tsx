@@ -62,6 +62,32 @@ describe("JournalCaptureForm", () => {
     ).toBeInTheDocument();
   });
 
+  it("stops active dictation when switching away from voice mode", async () => {
+    const recognition = createRecognitionStub();
+    const user = userEvent.setup();
+
+    render(
+      <JournalCaptureForm
+        action="/entries"
+        createSpeechRecognition={() => recognition}
+        description="Create a new entry"
+        heading="New journal entry"
+        submitLabel="Save entry"
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Voice dictation" }));
+    await user.click(screen.getByRole("button", { name: "Start dictation" }));
+
+    expect(screen.getByLabelText("Entry")).toHaveAttribute("readonly");
+
+    await user.click(screen.getByRole("button", { name: "Typed" }));
+
+    expect(recognition.stop).toHaveBeenCalledTimes(1);
+    expect(getSourceInput()).toHaveValue("typed");
+    expect(screen.getByLabelText("Entry")).not.toHaveAttribute("readonly");
+  });
+
   it("imports OCR text into the shared editor", async () => {
     const extractImageText = vi
       .fn<(file: File, onProgress: (progress: number) => void) => Promise<string>>()
