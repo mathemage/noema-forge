@@ -35,7 +35,7 @@ export function getBootstrapChecks(
     {
       configured: true,
       detail:
-        "The Next.js App Router shell is in place for auth, journaling, and reflection work.",
+        "The Next.js App Router shell is in place for auth, journaling, and multimodal capture work.",
       key: "shell",
       label: "Responsive shell",
     },
@@ -50,8 +50,8 @@ export function getBootstrapChecks(
     {
       configured: storageConfigured,
       detail: storageConfigured
-        ? "S3 connection values are present for the future uploads slice."
-        : "Set the S3_* values before wiring voice or handwriting uploads.",
+        ? "S3 connection values are present if you later want to retain original upload assets."
+        : "Set the S3_* values if you want to retain original uploaded media alongside extracted journal text.",
       key: "storage",
       label: "S3-compatible storage",
     },

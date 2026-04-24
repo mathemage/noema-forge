@@ -45,7 +45,7 @@ export default async function EditEntryPage({
         </a>
       }
       appName={env.NEXT_PUBLIC_APP_NAME}
-      description="Refine the text while keeping the original entry history private and searchable."
+      description="Refine the text while keeping the original capture source and archive history private and searchable."
       signOutAction={signOutAction}
       title="Edit entry"
       userEmail={user.email}
@@ -54,7 +54,7 @@ export default async function EditEntryPage({
         action={`/entries/${entry.id}/update`}
         body={entry.body}
         cancelHref={`/entries/${entry.id}`}
-        description="Update the typed text and keep the entry in the same searchable archive."
+        description="Update the journal text while keeping the original capture source in the same searchable archive."
         error={error ? editErrorMessages[error] : undefined}
         heading="Revise this entry"
         key={entry.id}

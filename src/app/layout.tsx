@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "NoemaForge",
-  description: "Private typed capture and journal history for NoemaForge.",
+  description: "Private multimodal capture and journal history for NoemaForge.",
 };
 
 export default function RootLayout({

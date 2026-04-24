@@ -1,7 +1,7 @@
 import { EntryMetadata } from "@/components/entry-metadata";
 import { JournalChrome } from "@/components/journal-chrome";
 import { signOutWithAuthJsCredentials } from "@/lib/auth/authjs-actions";
-import { JournalEntryForm } from "@/components/journal-entry-form";
+import { JournalCaptureForm } from "@/components/journal-capture-form";
 import { requireCurrentUser } from "@/lib/auth/current-user";
 import { readServerEnv, usesAuthJsCredentials } from "@/lib/env";
 import { excerptText } from "@/lib/formatting";
@@ -34,18 +34,18 @@ export default async function Home({ searchParams }: HomePageProps) {
   return (
     <JournalChrome
       appName={env.NEXT_PUBLIC_APP_NAME}
-      description="Capture typed thoughts, edit them later, and search the archive without leaving your private journal."
+      description="Capture typed thoughts, voice dictation, or handwriting OCR and keep every entry in one private, searchable journal."
       signOutAction={signOutAction}
       title="Journal history"
       userEmail={user.email}
     >
       <div className="grid gap-6 xl:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
-        <JournalEntryForm
+        <JournalCaptureForm
           action="/entries"
           key="new-entry"
-          description="Typing is the default capture path for this slice. Save raw thoughts here, then review or edit them from the archive."
+          description="Type directly, dictate with your browser, or upload a handwritten note image. Review the extracted text before saving it into the archive."
           error={error ? homeErrorMessages[error] : undefined}
-          heading="New typed entry"
+          heading="New journal entry"
           submitLabel="Save entry"
         />
 
@@ -80,12 +80,12 @@ export default async function Home({ searchParams }: HomePageProps) {
 
           <div className="mt-6 space-y-4">
             {entries.length === 0 ? (
-              <div className="rounded-3xl border border-dashed border-border bg-slate-50/70 px-5 py-8 text-sm leading-6 text-muted">
-                {query
-                  ? `No entries match "${query}" yet.`
-                  : "No entries yet. Save your first typed capture to start the archive."}
-              </div>
-            ) : (
+                <div className="rounded-3xl border border-dashed border-border bg-slate-50/70 px-5 py-8 text-sm leading-6 text-muted">
+                  {query
+                    ? `No entries match "${query}" yet.`
+                    : "No entries yet. Save your first capture to start the archive."}
+                </div>
+              ) : (
               entries.map((entry) => (
                 <article
                   key={entry.id}

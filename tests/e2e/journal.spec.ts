@@ -31,13 +31,15 @@ test("desktop user can register, create, edit, search, sign out, and sign back i
     .click();
 
   await expect(page.getByRole("heading", { name: "Journal history" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Voice dictation" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Handwriting OCR" })).toBeVisible();
 
   await page.locator('form[action="/entries"] textarea[name="body"]').fill(initialEntry);
   await page.getByRole("button", { name: "Save entry" }).click();
 
   await expect(page).toHaveURL(/\/entries\/.+\?message=created$/);
   await expect(page.getByText(initialEntry)).toBeVisible();
-  await expect(page.getByText("typed", { exact: true })).toBeVisible();
+  await expect(page.getByText("Typed", { exact: true })).toBeVisible();
 
   await page.getByRole("link", { name: "Edit entry" }).click();
   await expect(page).toHaveURL(/\/entries\/.+\/edit$/);

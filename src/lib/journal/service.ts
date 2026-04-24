@@ -3,11 +3,14 @@ import { and, desc, eq, sql } from "drizzle-orm";
 import { journalEntries } from "@/db/schema";
 import { getDatabase, type Database } from "@/lib/db/client";
 import {
-  journalEntryInputSchema,
+  journalEntryCreateInputSchema,
+  journalEntryUpdateInputSchema,
   journalSearchSchema,
-  type JournalEntryInput,
+  type JournalEntryCreateInput,
   type JournalSearchInput,
+  type JournalEntryUpdateInput,
 } from "@/lib/journal/validation";
+import { type CaptureSource } from "@/lib/journal/capture-source";
 
 export type JournalErrorCode = "invalid-input" | "not-found";
 
@@ -22,7 +25,7 @@ export type JournalEntryRecord = {
   body: string;
   createdAt: Date;
   id: string;
-  source: "typed" | "voice" | "ocr";
+  source: CaptureSource;
   updatedAt: Date;
   userId: string;
 };
@@ -38,8 +41,18 @@ const journalEntrySelect = {
   userId: journalEntries.userId,
 };
 
-function parseEntryInput(input: JournalEntryInput) {
-  const result = journalEntryInputSchema.safeParse(input);
+function parseCreateEntryInput(input: JournalEntryCreateInput) {
+  const result = journalEntryCreateInputSchema.safeParse(input);
+
+  if (!result.success) {
+    throw new JournalError("invalid-input");
+  }
+
+  return result.data;
+}
+
+function parseUpdateEntryInput(input: JournalEntryUpdateInput) {
+  const result = journalEntryUpdateInputSchema.safeParse(input);
 
   if (!result.success) {
     throw new JournalError("invalid-input");
@@ -49,17 +62,17 @@ function parseEntryInput(input: JournalEntryInput) {
 }
 
 export async function createJournalEntry(
-  input: JournalEntryInput,
+  input: JournalEntryCreateInput,
   userId: string,
   db: Database = getDatabase(),
 ) {
-  const entry = parseEntryInput(input);
+  const entry = parseCreateEntryInput(input);
   const [createdEntry] = await db
     .insert(journalEntries)
     .values({
       body: entry.body,
       id: randomUUID(),
-      source: "typed",
+      source: entry.source,
       userId,
     })
     .returning(journalEntrySelect);
@@ -69,11 +82,11 @@ export async function createJournalEntry(
 
 export async function updateJournalEntry(
   entryId: string,
-  input: JournalEntryInput,
+  input: JournalEntryUpdateInput,
   userId: string,
   db: Database = getDatabase(),
 ) {
-  const entry = parseEntryInput(input);
+  const entry = parseUpdateEntryInput(input);
   const [updatedEntry] = await db
     .update(journalEntries)
     .set({

@@ -18,6 +18,11 @@ const MOCK_ENTRY = {
   userId: "user-1",
 };
 
+const MOCK_VOICE_ENTRY = {
+  ...MOCK_ENTRY,
+  source: "voice" as const,
+};
+
 function mockInsertDb(returnRows: unknown[]) {
   return {
     insert: vi.fn().mockReturnValue({
@@ -71,7 +76,24 @@ describe("createJournalEntry", () => {
     await createJournalEntry({ body: "Test entry" }, "user-1", db);
     const valuesMock = (db.insert as ReturnType<typeof vi.fn>).mock.results[0]
       .value.values as ReturnType<typeof vi.fn>;
-    expect(valuesMock.mock.calls[0][0]).toMatchObject({ userId: "user-1" });
+    expect(valuesMock.mock.calls[0][0]).toMatchObject({
+      source: "typed",
+      userId: "user-1",
+    });
+  });
+
+  it("persists the selected non-typed source", async () => {
+    const db = mockInsertDb([MOCK_VOICE_ENTRY]);
+    const result = await createJournalEntry(
+      { body: "Test entry", source: "voice" },
+      "user-1",
+      db,
+    );
+    const valuesMock = (db.insert as ReturnType<typeof vi.fn>).mock.results[0]
+      .value.values as ReturnType<typeof vi.fn>;
+
+    expect(result).toEqual(MOCK_VOICE_ENTRY);
+    expect(valuesMock.mock.calls[0][0]).toMatchObject({ source: "voice" });
   });
 
   it("throws JournalError for empty body", async () => {

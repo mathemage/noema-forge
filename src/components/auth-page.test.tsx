@@ -18,7 +18,7 @@ describe("AuthPage", () => {
 
     expect(
       screen.getByRole("heading", {
-        name: "Private typed capture, ready when you are.",
+        name: "Private multimodal capture, ready when you are.",
       }),
     ).toBeInTheDocument();
     expect(

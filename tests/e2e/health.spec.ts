@@ -18,7 +18,7 @@ test("signed-out users are redirected to sign-in", async ({ page }) => {
   await expect(page).toHaveURL(/\/sign-in$/);
   await expect(
     page.getByRole("heading", {
-      name: "Private typed capture, ready when you are.",
+      name: "Private multimodal capture, ready when you are.",
     }),
   ).toBeVisible();
 });

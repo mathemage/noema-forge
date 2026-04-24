@@ -82,7 +82,45 @@ describe("POST /entries", () => {
     expect(location.pathname).toBe("/entries/entry-1");
     expect(location.search).toBe("?message=created");
     expect(createJournalEntry).toHaveBeenCalledWith(
-      { body: "A typed entry" },
+      { body: "A typed entry", source: undefined },
+      "user-1",
+    );
+  });
+
+  it("passes the selected capture source when present", async () => {
+    vi.mocked(getRequestUser).mockResolvedValue({
+      createdAt: new Date(),
+      displayName: null,
+      email: "user@example.com",
+      id: "user-1",
+      updatedAt: new Date(),
+    });
+    vi.mocked(createJournalEntry).mockResolvedValue({
+      body: "A dictated entry",
+      createdAt: new Date(),
+      id: "entry-2",
+      source: "voice",
+      updatedAt: new Date(),
+      userId: "user-1",
+    });
+
+    const formData = new FormData();
+    formData.set("body", "A dictated entry");
+    formData.set("source", "voice");
+
+    const response = await POST(
+      new NextRequest("http://127.0.0.1:3000/entries", {
+        body: formData,
+        method: "POST",
+      }),
+    );
+    const location = new URL(response.headers.get("location") ?? "");
+
+    expect(response.status).toBe(303);
+    expect(location.pathname).toBe("/entries/entry-2");
+    expect(location.search).toBe("?message=created");
+    expect(createJournalEntry).toHaveBeenCalledWith(
+      { body: "A dictated entry", source: "voice" },
       "user-1",
     );
   });

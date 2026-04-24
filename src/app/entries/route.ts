@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextAuthRequest } from "next-auth";
 import { auth } from "@/auth";
 import { getRequestUser } from "@/lib/auth/request";
+import { isCaptureSource } from "@/lib/journal/capture-source";
 import { JournalError, createJournalEntry } from "@/lib/journal/service";
 import { getRequestUrl } from "@/lib/request-url";
 
@@ -13,11 +14,14 @@ async function handlePost(request: NextAuthRequest) {
   }
 
   const formData = await request.formData();
+  const source = formData.get("source");
 
   try {
     const entry = await createJournalEntry(
       {
         body: String(formData.get("body") ?? ""),
+        source:
+          typeof source === "string" && isCaptureSource(source) ? source : undefined,
       },
       user.id,
     );
