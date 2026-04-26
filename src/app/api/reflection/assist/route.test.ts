@@ -99,4 +99,25 @@ describe("POST /api/reflection/assist", () => {
     expect(response.status).toBe(400);
     expect(requestReflectionAssistance).not.toHaveBeenCalled();
   });
+
+  it("rejects malformed JSON as invalid input", async () => {
+    vi.mocked(getRequestUser).mockResolvedValue({
+      createdAt: new Date(),
+      displayName: null,
+      email: "user@example.com",
+      id: "user-1",
+      updatedAt: new Date(),
+    });
+
+    const response = await POST(
+      new NextRequest("http://127.0.0.1:3000/api/reflection/assist", {
+        body: "{",
+        method: "POST",
+      }),
+    );
+
+    await expect(response.json()).resolves.toEqual({ error: "invalid-input" });
+    expect(response.status).toBe(400);
+    expect(requestReflectionAssistance).not.toHaveBeenCalled();
+  });
 });

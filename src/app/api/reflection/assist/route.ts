@@ -14,7 +14,15 @@ async function handlePost(request: NextAuthRequest) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  const result = reflectionAssistRequestSchema.safeParse(await request.json());
+  let payload: unknown;
+
+  try {
+    payload = await request.json();
+  } catch {
+    return NextResponse.json({ error: "invalid-input" }, { status: 400 });
+  }
+
+  const result = reflectionAssistRequestSchema.safeParse(payload);
 
   if (!result.success) {
     return NextResponse.json({ error: "invalid-input" }, { status: 400 });
