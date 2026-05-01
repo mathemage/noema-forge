@@ -89,13 +89,24 @@ test("desktop user can register, create, edit, search, sign out, and sign back i
 
   await page.getByRole("link", { name: "Edit entry" }).click();
   await expect(page).toHaveURL(/\/entries\/.+\/edit$/);
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("load");
   await expect(page.getByRole("heading", { name: "Edit entry" })).toBeVisible();
-  const editor = page.locator('textarea[name="body"]');
+  const editForm = page.locator('form[action$="/update"]');
+  await expect(editForm).toBeVisible();
+  const editor = editForm.locator('textarea[name="body"]');
   await expect(editor).toHaveValue(editableEntry);
   await editor.fill(updatedEntry);
   await expect(editor).toHaveValue(updatedEntry);
-  await page.getByRole("button", { name: "Save changes" }).click();
+  const updateRequestPromise = page.waitForRequest((request) => {
+    const { pathname } = new URL(request.url());
+
+    return request.method() === "POST" && /\/entries\/[^/]+\/update$/.test(pathname);
+  });
+  await editForm.getByRole("button", { name: "Save changes" }).click();
+  const updateRequest = await updateRequestPromise;
+  expect(new URLSearchParams(updateRequest.postData() ?? "").get("body")).toBe(
+    updatedEntry,
+  );
 
   await expect(page).toHaveURL(/\/entries\/.+\?message=updated$/);
   await expect(page.getByText(updatedEntry)).toBeVisible();

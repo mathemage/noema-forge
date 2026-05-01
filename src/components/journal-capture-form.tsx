@@ -630,8 +630,8 @@ export function JournalCaptureForm({
                 <div>
                   <p className="font-medium">Next-step suggestions</p>
                   <ul className="mt-1 list-disc space-y-1 pl-5">
-                    {assistance.suggestions.map((suggestion) => (
-                      <li key={suggestion}>{suggestion}</li>
+                    {assistance.suggestions.map((suggestion, index) => (
+                      <li key={`suggestion-${index}`}>{suggestion}</li>
                     ))}
                   </ul>
                 </div>
@@ -645,9 +645,9 @@ export function JournalCaptureForm({
                   type="hidden"
                   value={assistance.followUpQuestion}
                 />
-                {assistance.suggestions.map((suggestion) => (
+                {assistance.suggestions.map((suggestion, index) => (
                   <input
-                    key={suggestion}
+                    key={`suggestion-input-${index}`}
                     name="suggestions"
                     type="hidden"
                     value={suggestion}

@@ -76,6 +76,23 @@ describe("requestReflectionAssistance", () => {
     );
 
     expect(assistance.source).toBe("fallback");
+    expect(assistance.message).toContain("invalid guidance");
+  });
+
+  it("falls back when Ollama is unavailable", async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockRejectedValue(new Error("offline"));
+
+    const assistance = await requestReflectionAssistance(
+      { body: "A difficult day" },
+      {
+        ...BASE_ENV,
+        OLLAMA_BASE_URL: "http://127.0.0.1:11434",
+        OLLAMA_MODEL: "test-model",
+      },
+      fetchImpl,
+    );
+
+    expect(assistance.source).toBe("fallback");
     expect(assistance.message).toContain("unavailable");
   });
 });

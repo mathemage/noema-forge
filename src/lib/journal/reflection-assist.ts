@@ -1,5 +1,9 @@
 import { z } from "zod";
 import { readServerEnv, type ServerEnv } from "@/lib/env";
+import {
+  JOURNAL_ENTRY_BODY_MAX_LENGTH,
+  REFLECTION_FIELD_MAX_LENGTH,
+} from "@/lib/journal/limits";
 
 export type ReflectionAssistInput = {
   body: string;
@@ -27,10 +31,10 @@ const ollamaReflectionSchema = z.object({
 });
 
 export const reflectionAssistRequestSchema = z.object({
-  body: z.string().trim().min(1).max(20_000),
-  feeling: z.string().trim().max(2_000).optional(),
-  nextStep: z.string().trim().max(2_000).optional(),
-  rootIssue: z.string().trim().max(2_000).optional(),
+  body: z.string().trim().min(1).max(JOURNAL_ENTRY_BODY_MAX_LENGTH),
+  feeling: z.string().trim().max(REFLECTION_FIELD_MAX_LENGTH).optional(),
+  nextStep: z.string().trim().max(REFLECTION_FIELD_MAX_LENGTH).optional(),
+  rootIssue: z.string().trim().max(REFLECTION_FIELD_MAX_LENGTH).optional(),
 });
 
 function fallbackReflectionAssistance(message: string): ReflectionAssistance {
@@ -85,8 +89,10 @@ export async function requestReflectionAssistance(
     );
   }
 
+  let response: Response;
+
   try {
-    const response = await fetchImpl(
+    response = await fetchImpl(
       new URL("/api/generate", env.OLLAMA_BASE_URL),
       {
         body: JSON.stringify({
@@ -102,13 +108,19 @@ export async function requestReflectionAssistance(
         signal: AbortSignal.timeout(8_000),
       },
     );
+  } catch {
+    return fallbackReflectionAssistance(
+      "Ollama is unavailable, so local reflection guidance was used.",
+    );
+  }
 
-    if (!response.ok) {
-      return fallbackReflectionAssistance(
-        "Ollama did not return guidance, so local reflection guidance was used.",
-      );
-    }
+  if (!response.ok) {
+    return fallbackReflectionAssistance(
+      "Ollama did not return guidance, so local reflection guidance was used.",
+    );
+  }
 
+  try {
     const payload = ollamaGenerateResponseSchema.parse(await response.json());
     const assistance = parseOllamaReflection(payload.response);
 
@@ -119,7 +131,7 @@ export async function requestReflectionAssistance(
     };
   } catch {
     return fallbackReflectionAssistance(
-      "Ollama is unavailable, so local reflection guidance was used.",
+      "Ollama returned invalid guidance, so local reflection guidance was used.",
     );
   }
 }

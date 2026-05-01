@@ -4,11 +4,13 @@ import { JOURNAL_ENTRY_BODY_MAX_LENGTH } from "@/lib/journal/limits";
 
 const trimmedText = z.string().trim();
 const captureSourceSchema = z.enum(captureSourceValues);
+const journalEntryBodyMaxLengthLabel =
+  JOURNAL_ENTRY_BODY_MAX_LENGTH.toLocaleString("en-US");
 const journalEntryBodySchema = trimmedText
   .min(1, "Write something before saving.")
   .max(
     JOURNAL_ENTRY_BODY_MAX_LENGTH,
-    "Keep entries at 20,000 characters or fewer.",
+    `Keep entries at ${journalEntryBodyMaxLengthLabel} characters or fewer.`,
   );
 
 export const journalEntryCreateInputSchema = z.object({
