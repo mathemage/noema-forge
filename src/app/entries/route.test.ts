@@ -24,7 +24,10 @@ vi.mock("@/lib/journal/service", () => ({
 
 import { POST } from "@/app/entries/route";
 import { getRequestUser } from "@/lib/auth/request";
-import { JOURNAL_ENTRY_BODY_MAX_LENGTH } from "@/lib/journal/limits";
+import {
+  JOURNAL_ENTRY_BODY_MAX_LENGTH,
+  REFLECTION_FIELD_MAX_LENGTH,
+} from "@/lib/journal/limits";
 import { createJournalEntry, JournalError } from "@/lib/journal/service";
 
 afterEach(() => {
@@ -240,6 +243,52 @@ describe("POST /entries", () => {
     expect(response.status).toBe(303);
     expect(location.pathname).toBe("/");
     expect(location.search).toBe("?error=entry-too-long");
+    expect(createJournalEntry).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    [
+      "field",
+      (formData: FormData) => {
+        formData.set(
+          "feeling",
+          "a".repeat(REFLECTION_FIELD_MAX_LENGTH + 1),
+        );
+      },
+    ],
+    [
+      "suggestion",
+      (formData: FormData) => {
+        formData.append(
+          "suggestions",
+          "a".repeat(REFLECTION_FIELD_MAX_LENGTH + 1),
+        );
+      },
+    ],
+  ])("rejects an oversized reflection %s before saving", async (_label, fill) => {
+    vi.mocked(getRequestUser).mockResolvedValue({
+      createdAt: new Date(),
+      displayName: null,
+      email: "user@example.com",
+      id: "user-1",
+      updatedAt: new Date(),
+    });
+
+    const formData = new FormData();
+    formData.set("body", "A raw entry");
+    fill(formData);
+
+    const response = await POST(
+      new NextRequest("http://127.0.0.1:3000/entries", {
+        body: formData,
+        method: "POST",
+      }),
+    );
+    const location = new URL(response.headers.get("location") ?? "");
+
+    expect(response.status).toBe(303);
+    expect(location.pathname).toBe("/");
+    expect(location.search).toBe("?error=invalid-input");
     expect(createJournalEntry).not.toHaveBeenCalled();
   });
 
