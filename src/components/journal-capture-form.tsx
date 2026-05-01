@@ -46,6 +46,9 @@ type WindowWithSpeechRecognition = Window & {
   webkitSpeechRecognition?: BrowserSpeechRecognitionConstructor;
 };
 
+const journalEntryBodyMaxLengthLabel =
+  JOURNAL_ENTRY_BODY_MAX_LENGTH.toLocaleString("en-US");
+
 type JournalCaptureFormProps = {
   action: FormAction;
   createSpeechRecognition?: () => BrowserSpeechRecognition | null;
@@ -530,7 +533,7 @@ export function JournalCaptureForm({
             <p className="text-xs leading-5 text-rose-700">
               Shorten the raw entry or reflection before saving. The saved text
               would be {composedEntryBody.length.toLocaleString()} characters,
-              over the 20,000-character limit.
+              over the {journalEntryBodyMaxLengthLabel}-character limit.
             </p>
           ) : null}
         </div>

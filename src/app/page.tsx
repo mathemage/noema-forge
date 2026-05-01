@@ -5,6 +5,7 @@ import { JournalCaptureForm } from "@/components/journal-capture-form";
 import { requireCurrentUser } from "@/lib/auth/current-user";
 import { readServerEnv, usesAuthJsCredentials } from "@/lib/env";
 import { excerptText } from "@/lib/formatting";
+import { JOURNAL_ENTRY_BODY_MAX_LENGTH } from "@/lib/journal/limits";
 import { listJournalEntries } from "@/lib/journal/service";
 import { getSingleSearchParam } from "@/lib/search-params";
 
@@ -15,8 +16,10 @@ type HomePageProps = {
   }>;
 };
 
+const journalEntryBodyMaxLengthLabel =
+  JOURNAL_ENTRY_BODY_MAX_LENGTH.toLocaleString("en-US");
 const homeErrorMessages: Record<string, string> = {
-  "entry-too-long": "Shorten the entry or reflection before saving. The saved journal text must be 20,000 characters or fewer.",
+  "entry-too-long": `Shorten the entry or reflection before saving. The saved journal text must be ${journalEntryBodyMaxLengthLabel} characters or fewer.`,
   "invalid-input": "Write something before saving your entry.",
   "not-found": "That entry is no longer available.",
 };
