@@ -143,7 +143,6 @@ export function JournalCaptureForm({
   const [assistance, setAssistance] = useState<ReflectionAssistance | null>(null);
   const [assistError, setAssistError] = useState<string | null>(null);
   const [isRequestingAssist, setIsRequestingAssist] = useState(false);
-  const [isReady, setIsReady] = useState(false);
   const [source, setSource] = useState<CaptureSource>("typed");
   const [isDictating, setIsDictating] = useState(false);
   const [voiceMessage, setVoiceMessage] = useState<string | null>(null);
@@ -155,19 +154,21 @@ export function JournalCaptureForm({
   const dictationBaseTextRef = useRef("");
   const dictationStopReasonRef = useRef<"manual" | "mode-switch" | null>(null);
   const voiceFailedRef = useRef(false);
+  const assistAbortControllerRef = useRef<AbortController | null>(null);
   const assistRequestIdRef = useRef(0);
   const ocrRequestIdRef = useRef(0);
 
   useEffect(() => {
-    setIsReady(true);
-
     return () => {
+      assistAbortControllerRef.current?.abort();
       recognitionRef.current?.stop();
     };
   }, []);
 
   const clearAssistance = () => {
     assistRequestIdRef.current += 1;
+    assistAbortControllerRef.current?.abort();
+    assistAbortControllerRef.current = null;
     setAssistance(null);
     setAssistError(null);
     setIsRequestingAssist(false);
@@ -331,7 +332,10 @@ export function JournalCaptureForm({
       return;
     }
 
+    assistAbortControllerRef.current?.abort();
+    const abortController = new AbortController();
     const requestId = assistRequestIdRef.current + 1;
+    assistAbortControllerRef.current = abortController;
     assistRequestIdRef.current = requestId;
     setIsRequestingAssist(true);
     setAssistError(null);
@@ -348,6 +352,7 @@ export function JournalCaptureForm({
           "content-type": "application/json",
         },
         method: "POST",
+        signal: abortController.signal,
       });
 
       if (!response.ok) {
@@ -368,6 +373,7 @@ export function JournalCaptureForm({
       }
     } finally {
       if (assistRequestIdRef.current === requestId) {
+        assistAbortControllerRef.current = null;
         setIsRequestingAssist(false);
       }
     }
@@ -400,12 +406,7 @@ export function JournalCaptureForm({
         </div>
       ) : null}
 
-      <form
-        action={action}
-        className="mt-6 space-y-4"
-        data-ready={isReady ? "true" : "false"}
-        method="post"
-      >
+      <form action={action} className="mt-6 space-y-4" method="post">
         <div className="space-y-3">
           <div aria-label="Capture mode" className="flex flex-wrap gap-2" role="group">
             {captureSourceValues.map((mode) => {
@@ -530,7 +531,7 @@ export function JournalCaptureForm({
             <p className="text-xs leading-5 text-rose-700">{voiceError}</p>
           ) : null}
           {isComposedEntryTooLong ? (
-            <p className="text-xs leading-5 text-rose-700">
+            <p className="text-xs leading-5 text-rose-700" role="alert">
               Shorten the raw entry or reflection before saving. The saved text
               would be {composedEntryBody.length.toLocaleString()} characters,
               over the {journalEntryBodyMaxLengthLabel}-character limit.
@@ -605,12 +606,19 @@ export function JournalCaptureForm({
                 <h4 className="text-sm font-semibold text-foreground">
                   Optional Ollama assist
                 </h4>
-                <p className="text-xs leading-5 text-muted">
+                <p
+                  className="text-xs leading-5 text-muted"
+                  id="reflection-assist-description"
+                >
                   Ask for one follow-up question and two or three concrete next
-                  steps. The journal still works without Ollama.
+                  steps. When Ollama is configured, this sends the draft and
+                  reflection fields to that service. The journal still works
+                  without it.
                 </p>
               </div>
               <button
+                aria-busy={isRequestingAssist}
+                aria-describedby="reflection-assist-description"
                 className="inline-flex items-center justify-center rounded-full border border-border bg-white px-4 py-2 text-sm font-medium text-foreground transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={isRequestingAssist}
                 onClick={requestReflectionAssistance}
@@ -622,10 +630,21 @@ export function JournalCaptureForm({
 
             {assistance ? (
               <div className="space-y-3 rounded-2xl bg-slate-50 px-4 py-3 text-sm leading-6 text-foreground">
-                <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted">
-                  {assistance.source === "ollama" ? "Ollama" : "Local guidance"}
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted">
+                    {assistance.source === "ollama" ? "Ollama" : "Local guidance"}
+                  </p>
+                  <button
+                    className="text-xs font-medium text-muted underline-offset-4 hover:text-foreground hover:underline"
+                    onClick={clearAssistance}
+                    type="button"
+                  >
+                    Dismiss guidance
+                  </button>
+                </div>
+                <p aria-live="polite" className="text-sm text-muted" role="status">
+                  {assistance.message}
                 </p>
-                <p className="text-sm text-muted">{assistance.message}</p>
                 <div>
                   <p className="font-medium">Follow-up question</p>
                   <p>{assistance.followUpQuestion}</p>
@@ -638,6 +657,10 @@ export function JournalCaptureForm({
                     ))}
                   </ul>
                 </div>
+                <p className="text-xs text-muted">
+                  This guidance will be included with the saved entry unless you
+                  dismiss it.
+                </p>
                 <input
                   name="assistanceSource"
                   type="hidden"
@@ -660,7 +683,9 @@ export function JournalCaptureForm({
             ) : null}
 
             {assistError ? (
-              <p className="text-xs leading-5 text-rose-700">{assistError}</p>
+              <p className="text-xs leading-5 text-rose-700" role="alert">
+                {assistError}
+              </p>
             ) : null}
           </div>
         </section>

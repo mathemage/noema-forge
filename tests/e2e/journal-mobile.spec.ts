@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 test.use({
   viewport: {
@@ -16,6 +16,22 @@ function createCredentials() {
     password: "journal-pass-123",
     uniqueId,
   };
+}
+
+async function waitForCaptureForm(page: Page) {
+  const voiceButton = page.getByRole("button", { name: "Voice dictation" });
+
+  await expect
+    .poll(async () => {
+      await voiceButton.click();
+      return voiceButton.getAttribute("aria-pressed");
+    })
+    .toBe("true");
+
+  const typedButton = page.getByRole("button", { name: "Typed" });
+  await typedButton.click();
+  await expect(typedButton).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByLabel("Entry", { exact: true })).toBeEditable();
 }
 
 test("mobile layout keeps multimodal capture and history usable", async ({ page }) => {
@@ -39,10 +55,7 @@ test("mobile layout keeps multimodal capture and history usable", async ({ page 
   await expect(page.getByRole("button", { name: "Voice dictation" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Handwriting OCR" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Search" })).toBeVisible();
-  await expect(page.locator('form[action="/entries"]')).toHaveAttribute(
-    "data-ready",
-    "true",
-  );
+  await waitForCaptureForm(page);
 
   await page.locator('form[action="/entries"] textarea[name="body"]').fill(entryText);
   await page.getByRole("button", { name: "Save entry" }).click();

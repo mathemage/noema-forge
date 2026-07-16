@@ -28,7 +28,9 @@ async function handlePost(request: NextAuthRequest) {
     return NextResponse.json({ error: "invalid-input" }, { status: 400 });
   }
 
-  const assistance = await requestReflectionAssistance(result.data);
+  const assistance = await requestReflectionAssistance(result.data, {
+    signal: request.signal,
+  });
 
   return NextResponse.json(assistance);
 }

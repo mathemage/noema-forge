@@ -72,12 +72,17 @@ describe("POST /api/reflection/assist", () => {
       followUpQuestion: "What is the smallest next step?",
       source: "fallback",
     });
-    expect(requestReflectionAssistance).toHaveBeenCalledWith({
-      body: "Raw entry",
-      feeling: "Tense",
-      nextStep: "",
-      rootIssue: "Unclear priority",
-    });
+    expect(requestReflectionAssistance).toHaveBeenCalledWith(
+      {
+        body: "Raw entry",
+        feeling: "Tense",
+        nextStep: "",
+        rootIssue: "Unclear priority",
+      },
+      {
+        signal: expect.any(AbortSignal),
+      },
+    );
   });
 
   it("rejects an empty draft", async () => {

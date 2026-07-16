@@ -251,6 +251,12 @@ describe("JournalCaptureForm", () => {
     );
     expect(getHiddenInputValue("assistanceSource")).toBe("fallback");
     expect(screen.getByText("Open the draft.")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Dismiss guidance" }));
+
+    expect(screen.queryByText("What would make this easier to start?")).not.toBeInTheDocument();
+    expect(document.querySelector('input[name="followUpQuestion"]')).toBeNull();
+    expect(document.querySelector('input[name="assistanceSource"]')).toBeNull();
   });
 
   it("clears generated reflection assistance when the draft changes", async () => {
@@ -290,7 +296,7 @@ describe("JournalCaptureForm", () => {
     expect(document.querySelector('input[name="assistanceSource"]')).toBeNull();
   });
 
-  it("ignores stale reflection assistance that resolves after edits", async () => {
+  it("aborts and ignores stale reflection assistance after edits", async () => {
     let resolveResponse: ((response: Response) => void) | null = null;
     const fetchImpl = vi.fn<typeof fetch>().mockReturnValue(
       new Promise<Response>((resolve) => {
@@ -312,6 +318,8 @@ describe("JournalCaptureForm", () => {
     await user.type(screen.getByLabelText("Entry"), "A raw draft");
     await user.click(screen.getByRole("button", { name: "Get reflection prompt" }));
     await user.type(screen.getByLabelText("Entry"), " changed");
+
+    expect(fetchImpl.mock.calls[0]?.[1]?.signal?.aborted).toBe(true);
 
     await act(async () => {
       resolveResponse?.(

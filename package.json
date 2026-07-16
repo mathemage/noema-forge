@@ -20,34 +20,34 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "3.1029.0",
+    "@aws-sdk/client-s3": "3.1089.0",
     "drizzle-orm": "0.45.2",
-    "next": "16.2.3",
+    "next": "16.2.10",
     "next-auth": "5.0.0-beta.31",
     "postgres": "3.4.9",
-    "react": "19.2.5",
-    "react-dom": "19.2.5",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
     "tesseract.js": "7.0.0",
-    "zod": "4.3.6"
+    "zod": "4.4.3"
   },
   "devDependencies": {
-    "@playwright/test": "1.59.1",
-    "@tailwindcss/postcss": "4.2.2",
+    "@playwright/test": "1.61.1",
+    "@tailwindcss/postcss": "4.3.3",
     "@testing-library/dom": "10.4.1",
     "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "16.3.2",
     "@testing-library/user-event": "14.6.1",
     "@types/node": "22.19.17",
-    "@types/react": "19.2.14",
+    "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
     "dotenv": "17.4.2",
     "drizzle-kit": "0.31.10",
     "eslint": "9.39.4",
-    "eslint-config-next": "16.2.3",
-    "jsdom": "29.0.2",
-    "tailwindcss": "4.2.2",
+    "eslint-config-next": "16.2.10",
+    "jsdom": "29.1.1",
+    "tailwindcss": "4.3.3",
     "typescript": "5.9.3",
-    "vite": "8.0.8",
-    "vitest": "4.1.4"
+    "vite": "8.1.5",
+    "vitest": "4.1.10"
   }
 }
