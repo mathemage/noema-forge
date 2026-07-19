@@ -56,6 +56,14 @@ test("desktop user can register, create, edit, search, sign out, and sign back i
   await expect(page.getByRole("heading", { name: "Guided reflection" })).toBeVisible();
   await waitForCaptureForm(page);
 
+  await page.goto("/?error=invalid-input");
+  await expect(
+    page.getByText(
+      "Add a raw entry and keep each reflection field to 2,000 characters or fewer before saving.",
+    ),
+  ).toBeVisible();
+  await waitForCaptureForm(page);
+
   await page.locator('form[action="/entries"] textarea[name="body"]').fill(initialEntry);
   await page.getByLabel("Feeling").fill(feeling);
   await page.getByLabel("Root issue").fill(rootIssue);
