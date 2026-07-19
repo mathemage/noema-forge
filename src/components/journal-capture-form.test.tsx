@@ -296,6 +296,40 @@ describe("JournalCaptureForm", () => {
     expect(document.querySelector('input[name="assistanceSource"]')).toBeNull();
   });
 
+  it("explains how to recover when the reflection session expires", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn<typeof fetch>().mockResolvedValue(
+        new Response(JSON.stringify({ error: "unauthorized" }), { status: 401 }),
+      ),
+    );
+    const user = userEvent.setup();
+
+    render(
+      <JournalCaptureForm
+        action="/entries"
+        description="Create a new entry"
+        heading="New journal entry"
+        submitLabel="Save entry"
+      />,
+    );
+
+    await user.type(screen.getByLabelText("Entry"), "A raw draft");
+    await user.click(screen.getByRole("button", { name: "Get reflection prompt" }));
+
+    expect(
+      await screen.findByText(
+        "Your session expired. Sign in again before requesting reflection guidance.",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(
+        "Reflection assistance is unavailable. You can still complete the fields manually.",
+      ),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Get reflection prompt" })).toBeEnabled();
+  });
+
   it("aborts and ignores stale reflection assistance after edits", async () => {
     let resolveResponse: ((response: Response) => void) | null = null;
     const fetchImpl = vi.fn<typeof fetch>().mockReturnValue(

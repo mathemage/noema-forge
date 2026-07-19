@@ -339,6 +339,8 @@ export function JournalCaptureForm({
     assistRequestIdRef.current = requestId;
     setIsRequestingAssist(true);
     setAssistError(null);
+    let failureMessage =
+      "Reflection assistance is unavailable. You can still complete the fields manually.";
 
     try {
       const response = await fetch("/api/reflection/assist", {
@@ -356,6 +358,11 @@ export function JournalCaptureForm({
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          failureMessage =
+            "Your session expired. Sign in again before requesting reflection guidance.";
+        }
+
         throw new Error("Reflection assistance request failed.");
       }
 
@@ -367,9 +374,7 @@ export function JournalCaptureForm({
     } catch {
       if (assistRequestIdRef.current === requestId) {
         setAssistance(null);
-        setAssistError(
-          "Reflection assistance is unavailable. You can still complete the fields manually.",
-        );
+        setAssistError(failureMessage);
       }
     } finally {
       if (assistRequestIdRef.current === requestId) {
