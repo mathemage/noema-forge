@@ -292,6 +292,36 @@ describe("POST /entries", () => {
     expect(createJournalEntry).not.toHaveBeenCalled();
   });
 
+  it("rejects more than three reflection suggestions before saving", async () => {
+    vi.mocked(getRequestUser).mockResolvedValue({
+      createdAt: new Date(),
+      displayName: null,
+      email: "user@example.com",
+      id: "user-1",
+      updatedAt: new Date(),
+    });
+
+    const formData = new FormData();
+    formData.set("body", "A raw entry");
+    formData.append("suggestions", "First");
+    formData.append("suggestions", "Second");
+    formData.append("suggestions", "Third");
+    formData.append("suggestions", "Fourth");
+
+    const response = await POST(
+      new NextRequest("http://127.0.0.1:3000/entries", {
+        body: formData,
+        method: "POST",
+      }),
+    );
+    const location = new URL(response.headers.get("location") ?? "");
+
+    expect(response.status).toBe(303);
+    expect(location.pathname).toBe("/");
+    expect(location.search).toBe("?error=invalid-input");
+    expect(createJournalEntry).not.toHaveBeenCalled();
+  });
+
   it("redirects back to the journal when entry validation fails", async () => {
     vi.mocked(getRequestUser).mockResolvedValue({
       createdAt: new Date(),

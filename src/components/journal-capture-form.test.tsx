@@ -330,6 +330,45 @@ describe("JournalCaptureForm", () => {
     expect(screen.getByRole("button", { name: "Get reflection prompt" })).toBeEnabled();
   });
 
+  it("does not submit stale guidance while replacement guidance is pending", async () => {
+    const fetchImpl = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            followUpQuestion: "What would make this easier to start?",
+            message: "Local reflection guidance was used.",
+            source: "fallback",
+            suggestions: ["Open the draft.", "Write one imperfect sentence."],
+          }),
+          { status: 200 },
+        ),
+      )
+      .mockReturnValueOnce(new Promise<Response>(() => {}));
+    vi.stubGlobal("fetch", fetchImpl);
+    const user = userEvent.setup();
+
+    render(
+      <JournalCaptureForm
+        action="/entries"
+        description="Create a new entry"
+        heading="New journal entry"
+        submitLabel="Save entry"
+      />,
+    );
+
+    await user.type(screen.getByLabelText("Entry"), "A raw draft");
+    await user.click(screen.getByRole("button", { name: "Get reflection prompt" }));
+    await screen.findByText("What would make this easier to start?");
+
+    await user.click(screen.getByRole("button", { name: "Get reflection prompt" }));
+
+    expect(document.querySelector('input[name="followUpQuestion"]')).toBeNull();
+    expect(document.querySelector('input[name="assistanceSource"]')).toBeNull();
+    expect(document.querySelector('input[name="suggestions"]')).toBeNull();
+    expect(screen.getByRole("button", { name: "Save entry" })).toBeDisabled();
+  });
+
   it("aborts and ignores stale reflection assistance after edits", async () => {
     let resolveResponse: ((response: Response) => void) | null = null;
     const fetchImpl = vi.fn<typeof fetch>().mockReturnValue(

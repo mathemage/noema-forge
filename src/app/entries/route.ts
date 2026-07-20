@@ -22,7 +22,13 @@ function getReflectionField(formData: FormData, name: string) {
 }
 
 function getReflectionSuggestions(formData: FormData) {
-  const suggestions = formData.getAll("suggestions").map(String);
+  const suggestionValues = formData.getAll("suggestions");
+
+  if (suggestionValues.length > 3) {
+    return null;
+  }
+
+  const suggestions = suggestionValues.map(String);
 
   return suggestions.every(isReflectionFieldValid) ? suggestions : null;
 }

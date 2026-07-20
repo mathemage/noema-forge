@@ -338,6 +338,7 @@ export function JournalCaptureForm({
     assistAbortControllerRef.current = abortController;
     assistRequestIdRef.current = requestId;
     setIsRequestingAssist(true);
+    setAssistance(null);
     setAssistError(null);
     let failureMessage =
       "Reflection assistance is unavailable. You can still complete the fields manually.";
@@ -698,7 +699,7 @@ export function JournalCaptureForm({
         <div className="flex flex-wrap items-center gap-3">
           <button
             className="inline-flex items-center justify-center rounded-full bg-slate-950 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
-            disabled={isComposedEntryTooLong}
+            disabled={isComposedEntryTooLong || isRequestingAssist}
             type="submit"
           >
             {submitLabel}
