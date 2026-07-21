@@ -54,6 +54,37 @@ describe("auth configuration", () => {
     expect(credentialsProvider).toHaveBeenCalledTimes(1);
   });
 
+  it("trusts journal route-wrapper requests on deployed hosts", async () => {
+    vi.stubEnv("AUTH_SIGN_IN_MODE", "journal");
+    vi.stubEnv("AUTH_TRUST_HOST", "false");
+    vi.stubEnv("NEXT_PUBLIC_APP_NAME", "NoemaForge");
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://noema-forge.vercel.app");
+
+    await import("@/auth");
+
+    const config = vi.mocked(nextAuth).mock.calls[0]?.[0] as {
+      trustHost: boolean;
+    };
+
+    expect(config.trustHost).toBe(true);
+  });
+
+  it("still requires explicit host trust for Auth.js credentials", async () => {
+    vi.stubEnv("AUTH_SECRET", "test-secret");
+    vi.stubEnv("AUTH_SIGN_IN_MODE", "authjs-credentials");
+    vi.stubEnv("AUTH_TRUST_HOST", "false");
+    vi.stubEnv("NEXT_PUBLIC_APP_NAME", "NoemaForge");
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://journal.example.com");
+
+    await import("@/auth");
+
+    const config = vi.mocked(nextAuth).mock.calls[0]?.[0] as {
+      trustHost: boolean;
+    };
+
+    expect(config.trustHost).toBe(false);
+  });
+
   it("leaves session dates unset when JWT claims are missing", async () => {
     vi.stubEnv("NEXT_PUBLIC_APP_NAME", "NoemaForge");
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "http://127.0.0.1:3000");

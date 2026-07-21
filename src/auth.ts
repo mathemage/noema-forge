@@ -100,7 +100,7 @@ const authConfig = {
   session: {
     strategy: "jwt",
   },
-  trustHost: shouldTrustAuthHost(env),
+  trustHost: !authJsCredentialsEnabled || shouldTrustAuthHost(env),
 } satisfies NextAuthConfig;
 
 export const { auth, handlers, signIn, signOut } = NextAuth(authConfig);
