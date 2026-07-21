@@ -58,7 +58,10 @@ describe("POST /entries/[entryId]/update", () => {
       }),
       { params: Promise.resolve({ entryId: "entry-1" }) },
     );
-    const location = new URL(response.headers.get("location") ?? "");
+    const location = new URL(
+      response.headers.get("location") ?? "",
+      "http://127.0.0.1:3000",
+    );
 
     expect(response.status).toBe(303);
     expect(location.pathname).toBe("/entries/entry-1");
@@ -92,7 +95,10 @@ describe("POST /entries/[entryId]/update", () => {
       }),
       { params: Promise.resolve({ entryId: "entry-1" }) },
     );
-    const location = new URL(response.headers.get("location") ?? "");
+    const location = new URL(
+      response.headers.get("location") ?? "",
+      "http://127.0.0.1:3000",
+    );
 
     expect(response.status).toBe(303);
     expect(location.pathname).toBe("/entries/entry-1/edit");

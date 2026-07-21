@@ -1,9 +1,8 @@
-import { NextResponse } from "next/server";
 import type { NextAuthRequest } from "next-auth";
 import { auth } from "@/auth";
 import { getRequestUser } from "@/lib/auth/request";
 import { JournalError, updateJournalEntry } from "@/lib/journal/service";
-import { getRequestUrl } from "@/lib/request-url";
+import { redirectToRequestOrigin } from "@/lib/request-url";
 
 type EntryUpdateRouteContext = {
   params: Promise<{ entryId: string }>;
@@ -16,7 +15,7 @@ async function handlePost(
   const user = await getRequestUser(request);
 
   if (!user) {
-    return NextResponse.redirect(getRequestUrl("/sign-in"), 303);
+    return redirectToRequestOrigin("/sign-in");
   }
 
   const { entryId } = await context.params;
@@ -31,10 +30,7 @@ async function handlePost(
       user.id,
     );
 
-    return NextResponse.redirect(
-      getRequestUrl(`/entries/${entryId}?message=updated`),
-      303,
-    );
+    return redirectToRequestOrigin(`/entries/${entryId}?message=updated`);
   } catch (error) {
     if (error instanceof JournalError) {
       const pathname =
@@ -42,7 +38,7 @@ async function handlePost(
           ? `/entries/${entryId}/edit?error=${error.code}`
           : "/?error=not-found";
 
-      return NextResponse.redirect(getRequestUrl(pathname), 303);
+      return redirectToRequestOrigin(pathname);
     }
 
     throw error;

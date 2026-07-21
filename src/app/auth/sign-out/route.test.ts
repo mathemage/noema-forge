@@ -24,18 +24,32 @@ afterEach(() => {
 });
 
 describe("POST /auth/sign-out", () => {
-  it("clears the session cookie and redirects to sign-in", async () => {
+  it("clears the session cookie and redirects on the Vercel Preview origin", async () => {
     const response = await POST(
-      new NextRequest("http://127.0.0.1:3000/auth/sign-out", {
-        headers: {
-          cookie: "noema_forge_session=session-token",
+      new NextRequest(
+        "https://noema-forge-git-fix-redirects.vercel.app/auth/sign-out",
+        {
+          headers: {
+            cookie: "noema_forge_session=session-token",
+            origin: "https://attacker.example.com",
+            "x-forwarded-host": "attacker.example.com",
+            "x-forwarded-proto": "http",
+          },
+          method: "POST",
         },
-        method: "POST",
-      }),
+      ),
     );
-    const location = new URL(response.headers.get("location") ?? "");
+    const locationHeader = response.headers.get("location") ?? "";
+    const location = new URL(
+      locationHeader,
+      "https://noema-forge-git-fix-redirects.vercel.app",
+    );
 
     expect(response.status).toBe(303);
+    expect(locationHeader).toBe("/sign-in?message=signed-out");
+    expect(location.origin).toBe(
+      "https://noema-forge-git-fix-redirects.vercel.app",
+    );
     expect(location.pathname).toBe("/sign-in");
     expect(location.search).toBe("?message=signed-out");
     expect(deleteSessionByToken).toHaveBeenCalledWith("session-token");

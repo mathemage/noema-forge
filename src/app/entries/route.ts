@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import type { NextAuthRequest } from "next-auth";
 import { auth } from "@/auth";
 import { getRequestUser } from "@/lib/auth/request";
@@ -9,7 +8,7 @@ import {
 } from "@/lib/journal/limits";
 import { composeJournalEntryBody } from "@/lib/journal/reflection";
 import { JournalError, createJournalEntry } from "@/lib/journal/service";
-import { getRequestUrl } from "@/lib/request-url";
+import { redirectToRequestOrigin } from "@/lib/request-url";
 
 function isReflectionFieldValid(value: string) {
   return value.trim().length <= REFLECTION_FIELD_MAX_LENGTH;
@@ -37,7 +36,7 @@ async function handlePost(request: NextAuthRequest) {
   const user = await getRequestUser(request);
 
   if (!user) {
-    return NextResponse.redirect(getRequestUrl("/sign-in"), 303);
+    return redirectToRequestOrigin("/sign-in");
   }
 
   const formData = await request.formData();
@@ -56,7 +55,7 @@ async function handlePost(request: NextAuthRequest) {
     rootIssue === null ||
     suggestions === null
   ) {
-    return NextResponse.redirect(getRequestUrl("/?error=invalid-input"), 303);
+    return redirectToRequestOrigin("/?error=invalid-input");
   }
 
   const body = composeJournalEntryBody({
@@ -73,7 +72,7 @@ async function handlePost(request: NextAuthRequest) {
   });
 
   if (body.length > JOURNAL_ENTRY_BODY_MAX_LENGTH) {
-    return NextResponse.redirect(getRequestUrl("/?error=entry-too-long"), 303);
+    return redirectToRequestOrigin("/?error=entry-too-long");
   }
 
   try {
@@ -86,16 +85,10 @@ async function handlePost(request: NextAuthRequest) {
       user.id,
     );
 
-    return NextResponse.redirect(
-      getRequestUrl(`/entries/${entry.id}?message=created`),
-      303,
-    );
+    return redirectToRequestOrigin(`/entries/${entry.id}?message=created`);
   } catch (error) {
     if (error instanceof JournalError) {
-      return NextResponse.redirect(
-        getRequestUrl(`/?error=${error.code}`),
-        303,
-      );
+      return redirectToRequestOrigin(`/?error=${error.code}`);
     }
 
     throw error;

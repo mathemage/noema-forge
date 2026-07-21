@@ -1,33 +1,44 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("@/lib/db/client", () => ({
+  checkDatabaseConnection: vi.fn(),
+}));
+
 import { GET } from "@/app/api/health/route";
+import { checkDatabaseConnection } from "@/lib/db/client";
 
 afterEach(() => {
-  vi.unstubAllEnvs();
+  vi.clearAllMocks();
 });
 
 describe("GET /api/health", () => {
-  it("returns a healthy payload without requiring runtime integrations", async () => {
-    vi.stubEnv("NEXT_PUBLIC_APP_NAME", "NoemaForge Test");
-    vi.stubEnv("DATABASE_URL", undefined);
-    vi.stubEnv("DATABASE_URL_NON_POOLING", undefined);
-    vi.stubEnv("S3_ACCESS_KEY_ID", undefined);
-    vi.stubEnv("S3_BUCKET", undefined);
-    vi.stubEnv("S3_ENDPOINT", undefined);
-    vi.stubEnv("S3_SECRET_ACCESS_KEY", undefined);
+  it("returns 200 when PostgreSQL is available without requiring S3", async () => {
+    vi.mocked(checkDatabaseConnection).mockResolvedValue(undefined);
 
     const response = await GET();
-    const body = (await response.json()) as {
-      app: string;
-      checks: Array<{ configured: boolean }>;
-      readiness: { configured: number; total: number };
-      status: string;
-    };
 
     expect(response.status).toBe(200);
-    expect(body.status).toBe("ok");
-    expect(body.app).toBe("NoemaForge Test");
-    expect(body.readiness.configured).toBe(2);
-    expect(body.readiness.total).toBe(4);
-    expect(body.checks).toHaveLength(4);
+    await expect(response.json()).resolves.toEqual({
+      checks: [{ key: "database", status: "ok" }],
+      status: "ok",
+    });
+    expect(checkDatabaseConnection).toHaveBeenCalledOnce();
+  });
+
+  it("returns a generic 503 when PostgreSQL is unavailable", async () => {
+    vi.mocked(checkDatabaseConnection).mockRejectedValue(
+      new Error("password secret-value failed for postgres://private-host"),
+    );
+
+    const response = await GET();
+    const body = await response.json();
+
+    expect(response.status).toBe(503);
+    expect(body).toEqual({
+      checks: [{ key: "database", status: "unavailable" }],
+      status: "unavailable",
+    });
+    expect(JSON.stringify(body)).not.toContain("secret-value");
+    expect(JSON.stringify(body)).not.toContain("private-host");
   });
 });

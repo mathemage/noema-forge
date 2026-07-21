@@ -61,7 +61,10 @@ describe("POST /auth/register", () => {
         method: "POST",
       }),
     );
-    const location = new URL(response.headers.get("location") ?? "");
+    const location = new URL(
+      response.headers.get("location") ?? "",
+      "http://127.0.0.1:3000",
+    );
 
     expect(response.status).toBe(303);
     expect(location.pathname).toBe("/");
@@ -92,7 +95,10 @@ describe("POST /auth/register", () => {
         method: "POST",
       }),
     );
-    const location = new URL(response.headers.get("location") ?? "");
+    const location = new URL(
+      response.headers.get("location") ?? "",
+      "http://127.0.0.1:3000",
+    );
 
     expect(response.status).toBe(303);
     expect(location.pathname).toBe("/sign-in");

@@ -1,16 +1,23 @@
 import { NextResponse } from "next/server";
-import { getBootstrapChecks, getBootstrapSummary } from "@/lib/bootstrap";
-import { readServerEnv } from "@/lib/env";
+import { checkDatabaseConnection } from "@/lib/db/client";
+
+export const runtime = "nodejs";
 
 export async function GET() {
-  const env = readServerEnv();
-  const checks = getBootstrapChecks(env);
-  const summary = getBootstrapSummary(checks);
+  try {
+    await checkDatabaseConnection();
 
-  return NextResponse.json({
-    app: env.NEXT_PUBLIC_APP_NAME,
-    checks,
-    readiness: summary,
-    status: "ok",
-  });
+    return NextResponse.json({
+      checks: [{ key: "database", status: "ok" }],
+      status: "ok",
+    });
+  } catch {
+    return NextResponse.json(
+      {
+        checks: [{ key: "database", status: "unavailable" }],
+        status: "unavailable",
+      },
+      { status: 503 },
+    );
+  }
 }

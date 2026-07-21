@@ -1,4 +1,4 @@
-import type { NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { readServerEnv } from "@/lib/env";
 
 function getConfiguredOrigin() {
@@ -11,14 +11,16 @@ function getFirstHeaderValue(value: string | null) {
 
 export function getRequestOrigin(request: NextRequest) {
   const host =
-    getFirstHeaderValue(request.headers.get("x-forwarded-host")) ??
-    getFirstHeaderValue(request.headers.get("host")) ??
-    request.nextUrl.host;
+    getFirstHeaderValue(request.headers.get("host")) ?? request.nextUrl.host;
+  const forwardedProtocol = getFirstHeaderValue(
+    request.headers.get("x-forwarded-proto"),
+  );
   const protocol =
-    getFirstHeaderValue(request.headers.get("x-forwarded-proto")) ??
-    request.nextUrl.protocol.replace(":", "");
+    request.nextUrl.protocol === "https:" || forwardedProtocol === "https"
+      ? "https"
+      : "http";
 
-  if (!host || (protocol !== "http" && protocol !== "https")) {
+  if (!host) {
     return getConfiguredOrigin();
   }
 
@@ -29,6 +31,9 @@ export function getRequestOrigin(request: NextRequest) {
   }
 }
 
-export function getRequestUrl(pathname: string) {
-  return new URL(pathname, getConfiguredOrigin());
+export function redirectToRequestOrigin(pathname: string) {
+  return new NextResponse(null, {
+    headers: { location: pathname },
+    status: 303,
+  });
 }
