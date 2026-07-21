@@ -5,6 +5,10 @@ import { JournalCaptureForm } from "@/components/journal-capture-form";
 import { requireCurrentUser } from "@/lib/auth/current-user";
 import { readServerEnv, usesAuthJsCredentials } from "@/lib/env";
 import { excerptText } from "@/lib/formatting";
+import {
+  JOURNAL_ENTRY_BODY_MAX_LENGTH,
+  REFLECTION_FIELD_MAX_LENGTH,
+} from "@/lib/journal/limits";
 import { listJournalEntries } from "@/lib/journal/service";
 import { getSingleSearchParam } from "@/lib/search-params";
 
@@ -15,8 +19,13 @@ type HomePageProps = {
   }>;
 };
 
+const journalEntryBodyMaxLengthLabel =
+  JOURNAL_ENTRY_BODY_MAX_LENGTH.toLocaleString("en-US");
+const reflectionFieldMaxLengthLabel =
+  REFLECTION_FIELD_MAX_LENGTH.toLocaleString("en-US");
 const homeErrorMessages: Record<string, string> = {
-  "invalid-input": "Write something before saving your entry.",
+  "entry-too-long": `Shorten the entry or reflection before saving. The saved journal text must be ${journalEntryBodyMaxLengthLabel} characters or fewer.`,
+  "invalid-input": `Add a raw entry and keep each reflection field to ${reflectionFieldMaxLengthLabel} characters or fewer before saving.`,
   "not-found": "That entry is no longer available.",
 };
 
@@ -34,7 +43,7 @@ export default async function Home({ searchParams }: HomePageProps) {
   return (
     <JournalChrome
       appName={env.NEXT_PUBLIC_APP_NAME}
-      description="Capture typed thoughts, voice dictation, or handwriting OCR and keep every entry in one private, searchable journal."
+      description="Capture raw thoughts, distill them into guided reflections, and keep every entry in one private, searchable journal."
       signOutAction={signOutAction}
       title="Journal history"
       userEmail={user.email}
@@ -43,7 +52,7 @@ export default async function Home({ searchParams }: HomePageProps) {
         <JournalCaptureForm
           action="/entries"
           key="new-entry"
-          description="Type directly, dictate with your browser, or upload a handwritten note image. Review the extracted text before saving it into the archive."
+          description="Type directly, dictate with your browser, or upload a handwritten note image. Then clarify the feeling, root issue, and next step before saving."
           error={error ? homeErrorMessages[error] : undefined}
           heading="New journal entry"
           submitLabel="Save entry"

@@ -20,6 +20,10 @@ export default defineConfig({
     command: process.env.CI
       ? `npm run build && npm run start -- --hostname ${host} --port ${port}`
       : `npm run dev -- --hostname ${host} --port ${port}`,
+    env: {
+      OLLAMA_BASE_URL: "",
+      OLLAMA_MODEL: "",
+    },
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
     url: `${baseURL}/api/health`,

@@ -6,6 +6,12 @@ import {
   type CaptureSource,
   formatCaptureSource,
 } from "@/lib/journal/capture-source";
+import {
+  JOURNAL_ENTRY_BODY_MAX_LENGTH,
+  REFLECTION_FIELD_MAX_LENGTH,
+} from "@/lib/journal/limits";
+import { composeJournalEntryBody } from "@/lib/journal/reflection";
+import type { ReflectionAssistance } from "@/lib/journal/reflection-assist";
 
 type BrowserSpeechRecognitionResult = {
   0: {
@@ -39,6 +45,9 @@ type WindowWithSpeechRecognition = Window & {
   SpeechRecognition?: BrowserSpeechRecognitionConstructor;
   webkitSpeechRecognition?: BrowserSpeechRecognitionConstructor;
 };
+
+const journalEntryBodyMaxLengthLabel =
+  JOURNAL_ENTRY_BODY_MAX_LENGTH.toLocaleString("en-US");
 
 type JournalCaptureFormProps = {
   action: FormAction;
@@ -128,6 +137,12 @@ export function JournalCaptureForm({
   submitLabel,
 }: JournalCaptureFormProps) {
   const [entryBody, setEntryBody] = useState("");
+  const [feeling, setFeeling] = useState("");
+  const [rootIssue, setRootIssue] = useState("");
+  const [nextStep, setNextStep] = useState("");
+  const [assistance, setAssistance] = useState<ReflectionAssistance | null>(null);
+  const [assistError, setAssistError] = useState<string | null>(null);
+  const [isRequestingAssist, setIsRequestingAssist] = useState(false);
   const [source, setSource] = useState<CaptureSource>("typed");
   const [isDictating, setIsDictating] = useState(false);
   const [voiceMessage, setVoiceMessage] = useState<string | null>(null);
@@ -139,13 +154,25 @@ export function JournalCaptureForm({
   const dictationBaseTextRef = useRef("");
   const dictationStopReasonRef = useRef<"manual" | "mode-switch" | null>(null);
   const voiceFailedRef = useRef(false);
+  const assistAbortControllerRef = useRef<AbortController | null>(null);
+  const assistRequestIdRef = useRef(0);
   const ocrRequestIdRef = useRef(0);
 
   useEffect(() => {
     return () => {
+      assistAbortControllerRef.current?.abort();
       recognitionRef.current?.stop();
     };
   }, []);
+
+  const clearAssistance = () => {
+    assistRequestIdRef.current += 1;
+    assistAbortControllerRef.current?.abort();
+    assistAbortControllerRef.current = null;
+    setAssistance(null);
+    setAssistError(null);
+    setIsRequestingAssist(false);
+  };
 
   const stopDictation = (reason: "manual" | "mode-switch" = "manual") => {
     if (!recognitionRef.current) {
@@ -201,6 +228,7 @@ export function JournalCaptureForm({
         (_, index) => event.results[index]?.[0]?.transcript ?? "",
       ).join(" ");
 
+      clearAssistance();
       setEntryBody(appendCaptureText(dictationBaseTextRef.current, transcript));
     };
 
@@ -252,6 +280,7 @@ export function JournalCaptureForm({
 
     const requestId = ocrRequestIdRef.current + 1;
     ocrRequestIdRef.current = requestId;
+    clearAssistance();
     setSource("ocr");
     setOcrError(null);
     setOcrMessage(`Reading ${file.name}...`);
@@ -293,6 +322,80 @@ export function JournalCaptureForm({
       event.target.value = "";
     }
   };
+
+  const requestReflectionAssistance = async () => {
+    const body = entryBody.trim();
+
+    if (!body) {
+      setAssistError("Add a raw entry before requesting reflection guidance.");
+      setAssistance(null);
+      return;
+    }
+
+    assistAbortControllerRef.current?.abort();
+    const abortController = new AbortController();
+    const requestId = assistRequestIdRef.current + 1;
+    assistAbortControllerRef.current = abortController;
+    assistRequestIdRef.current = requestId;
+    setIsRequestingAssist(true);
+    setAssistance(null);
+    setAssistError(null);
+    let failureMessage =
+      "Reflection assistance is unavailable. You can still complete the fields manually.";
+
+    try {
+      const response = await fetch("/api/reflection/assist", {
+        body: JSON.stringify({
+          body,
+          feeling,
+          nextStep,
+          rootIssue,
+        }),
+        headers: {
+          "content-type": "application/json",
+        },
+        method: "POST",
+        signal: abortController.signal,
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          failureMessage =
+            "Your session expired. Sign in again before requesting reflection guidance.";
+        }
+
+        throw new Error("Reflection assistance request failed.");
+      }
+
+      const nextAssistance = (await response.json()) as ReflectionAssistance;
+
+      if (assistRequestIdRef.current === requestId) {
+        setAssistance(nextAssistance);
+      }
+    } catch {
+      if (assistRequestIdRef.current === requestId) {
+        setAssistance(null);
+        setAssistError(failureMessage);
+      }
+    } finally {
+      if (assistRequestIdRef.current === requestId) {
+        assistAbortControllerRef.current = null;
+        setIsRequestingAssist(false);
+      }
+    }
+  };
+
+  const composedEntryBody = composeJournalEntryBody({
+    assistanceSource: assistance?.source,
+    body: entryBody,
+    feeling,
+    followUpQuestion: assistance?.followUpQuestion,
+    nextStep,
+    rootIssue,
+    suggestions: assistance?.suggestions,
+  });
+  const isComposedEntryTooLong =
+    composedEntryBody.length > JOURNAL_ENTRY_BODY_MAX_LENGTH;
 
   return (
     <section className="rounded-3xl border border-border/80 bg-card/95 p-6 shadow-sm sm:p-8">
@@ -406,9 +509,12 @@ export function JournalCaptureForm({
           <textarea
             className="min-h-56 w-full rounded-3xl border border-border bg-white px-4 py-3 text-base text-foreground outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-200"
             id="body"
-            maxLength={20_000}
+            maxLength={JOURNAL_ENTRY_BODY_MAX_LENGTH}
             name="body"
-            onChange={(event) => setEntryBody(event.target.value)}
+            onChange={(event) => {
+              clearAssistance();
+              setEntryBody(event.target.value);
+            }}
             placeholder="Write or review the journal text you want to keep."
             readOnly={isDictating || isOcrProcessing}
             required
@@ -430,11 +536,170 @@ export function JournalCaptureForm({
           {voiceError && source !== "voice" ? (
             <p className="text-xs leading-5 text-rose-700">{voiceError}</p>
           ) : null}
+          {isComposedEntryTooLong ? (
+            <p className="text-xs leading-5 text-rose-700" role="alert">
+              Shorten the raw entry or reflection before saving. The saved text
+              would be {composedEntryBody.length.toLocaleString()} characters,
+              over the {journalEntryBodyMaxLengthLabel}-character limit.
+            </p>
+          ) : null}
         </div>
+
+        <section className="space-y-4 rounded-3xl border border-border bg-slate-50/70 p-4">
+          <div className="space-y-1">
+            <h3 className="text-lg font-semibold tracking-tight text-foreground">
+              Guided reflection
+            </h3>
+            <p className="text-sm leading-6 text-muted">
+              Distill the raw capture into what you feel, what may be underneath
+              it, and one useful next step.
+            </p>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-3">
+            <label className="space-y-2 text-sm font-medium text-foreground" htmlFor="feeling">
+              <span>Feeling</span>
+              <textarea
+                className="min-h-28 w-full rounded-3xl border border-border bg-white px-4 py-3 text-sm text-foreground outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-200"
+                id="feeling"
+                maxLength={REFLECTION_FIELD_MAX_LENGTH}
+                name="feeling"
+                onChange={(event) => {
+                  clearAssistance();
+                  setFeeling(event.target.value);
+                }}
+                placeholder="What feeling is most present?"
+                value={feeling}
+              />
+            </label>
+
+            <label className="space-y-2 text-sm font-medium text-foreground" htmlFor="rootIssue">
+              <span>Root issue</span>
+              <textarea
+                className="min-h-28 w-full rounded-3xl border border-border bg-white px-4 py-3 text-sm text-foreground outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-200"
+                id="rootIssue"
+                maxLength={REFLECTION_FIELD_MAX_LENGTH}
+                name="rootIssue"
+                onChange={(event) => {
+                  clearAssistance();
+                  setRootIssue(event.target.value);
+                }}
+                placeholder="What seems to be underneath it?"
+                value={rootIssue}
+              />
+            </label>
+
+            <label className="space-y-2 text-sm font-medium text-foreground" htmlFor="nextStep">
+              <span>Next step</span>
+              <textarea
+                className="min-h-28 w-full rounded-3xl border border-border bg-white px-4 py-3 text-sm text-foreground outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-200"
+                id="nextStep"
+                maxLength={REFLECTION_FIELD_MAX_LENGTH}
+                name="nextStep"
+                onChange={(event) => {
+                  clearAssistance();
+                  setNextStep(event.target.value);
+                }}
+                placeholder="What is one concrete move?"
+                value={nextStep}
+              />
+            </label>
+          </div>
+
+          <div className="space-y-3 rounded-3xl border border-border bg-white p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="space-y-1">
+                <h4 className="text-sm font-semibold text-foreground">
+                  Optional Ollama assist
+                </h4>
+                <p
+                  className="text-xs leading-5 text-muted"
+                  id="reflection-assist-description"
+                >
+                  Ask for one follow-up question and two or three concrete next
+                  steps. When Ollama is configured, this sends the draft and
+                  reflection fields to that service. The journal still works
+                  without it.
+                </p>
+              </div>
+              <button
+                aria-busy={isRequestingAssist}
+                aria-describedby="reflection-assist-description"
+                className="inline-flex items-center justify-center rounded-full border border-border bg-white px-4 py-2 text-sm font-medium text-foreground transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={isRequestingAssist}
+                onClick={requestReflectionAssistance}
+                type="button"
+              >
+                {isRequestingAssist ? "Asking..." : "Get reflection prompt"}
+              </button>
+            </div>
+
+            {assistance ? (
+              <div className="space-y-3 rounded-2xl bg-slate-50 px-4 py-3 text-sm leading-6 text-foreground">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted">
+                    {assistance.source === "ollama" ? "Ollama" : "Local guidance"}
+                  </p>
+                  <button
+                    className="text-xs font-medium text-muted underline-offset-4 hover:text-foreground hover:underline"
+                    onClick={clearAssistance}
+                    type="button"
+                  >
+                    Dismiss guidance
+                  </button>
+                </div>
+                <p aria-live="polite" className="text-sm text-muted" role="status">
+                  {assistance.message}
+                </p>
+                <div>
+                  <p className="font-medium">Follow-up question</p>
+                  <p>{assistance.followUpQuestion}</p>
+                </div>
+                <div>
+                  <p className="font-medium">Next-step suggestions</p>
+                  <ul className="mt-1 list-disc space-y-1 pl-5">
+                    {assistance.suggestions.map((suggestion, index) => (
+                      <li key={`suggestion-${index}`}>{suggestion}</li>
+                    ))}
+                  </ul>
+                </div>
+                <p className="text-xs text-muted">
+                  This guidance will be included with the saved entry unless you
+                  dismiss it.
+                </p>
+                <input
+                  name="assistanceSource"
+                  type="hidden"
+                  value={assistance.source}
+                />
+                <input
+                  name="followUpQuestion"
+                  type="hidden"
+                  value={assistance.followUpQuestion}
+                />
+                {assistance.suggestions.map((suggestion, index) => (
+                  <input
+                    key={`suggestion-input-${index}`}
+                    name="suggestions"
+                    type="hidden"
+                    value={suggestion}
+                  />
+                ))}
+              </div>
+            ) : null}
+
+            {assistError ? (
+              <p className="text-xs leading-5 text-rose-700" role="alert">
+                {assistError}
+              </p>
+            ) : null}
+          </div>
+        </section>
 
         <div className="flex flex-wrap items-center gap-3">
           <button
-            className="inline-flex items-center justify-center rounded-full bg-slate-950 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800"
+            className="inline-flex items-center justify-center rounded-full bg-slate-950 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={isComposedEntryTooLong || isRequestingAssist}
             type="submit"
           >
             {submitLabel}

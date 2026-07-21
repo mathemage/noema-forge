@@ -31,6 +31,8 @@ const serverEnvSchema = z.object({
     coerceOptional,
     z.string().url().default("http://127.0.0.1:3000"),
   ),
+  OLLAMA_BASE_URL: optionalUrl,
+  OLLAMA_MODEL: optionalText,
   S3_ACCESS_KEY_ID: optionalText,
   S3_BUCKET: optionalText,
   S3_ENDPOINT: optionalUrl,
