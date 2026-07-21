@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { getDatabaseUrl, getDatabaseUrlNonPooling } from "@/lib/env";
@@ -36,4 +37,10 @@ export function getDatabase() {
   }
 
   return databaseGlobal.__noemaForgeDatabase;
+}
+
+export async function checkDatabaseConnection(
+  database: Database = getDatabase(),
+) {
+  await database.execute(sql`select 1`);
 }

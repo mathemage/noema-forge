@@ -11,12 +11,14 @@ NoemaForge is a journaling web app focused on turning raw thoughts into clearer,
    - If your Docker install does not include Compose, use:
      `docker run --name noema-forge-postgres -e POSTGRES_DB=noema_forge -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -p 5432:5432 -d postgres:17-alpine`
 3. Install dependencies: `npm install`
-4. Apply the bootstrap schema: `npm run db:push`
+4. Apply the checked-in migrations: `npm run db:migrate`
 5. Start the app: `npm run dev`
 
 The app runs at `http://127.0.0.1:3000`. Open it to create a journal account or sign in, and use `http://127.0.0.1:3000/api/health` for the health route.
 
-The sign-in page and health route still load without Postgres configured, but account creation, journal entry saves, edits, and search require `DATABASE_URL`.
+`db:migrate` expects a fresh database or one already managed by that command. If a disposable local database was previously initialized with `db:push`, recreate it before migrating. Back up any data-bearing database instead of recreating it.
+
+The sign-in page still loads without Postgres configured. The health route returns `503` until Postgres is reachable, and account creation, journal entry saves, edits, and search require `DATABASE_URL`.
 
 By default, auth stays on the first-party journal session flow. To enable the optional Auth.js credentials alternative, set `AUTH_SIGN_IN_MODE=authjs-credentials`, provide `AUTH_SECRET`, and set `AUTH_TRUST_HOST=true` if your deployment relies on forwarded proxy headers. The same journal user records and entry routes stay in place; only the sign-in/session mechanism changes.
 
@@ -32,10 +34,13 @@ Guided reflection works without extra services. To enable optional Ollama sugges
 | `npm run test:unit` | Run Vitest unit and route tests |
 | `npm run test:e2e` | Run the Playwright smoke suite |
 | `npm run db:generate` | Generate Drizzle SQL from the schema |
-| `npm run db:push` | Push the current Drizzle schema to Postgres |
+| `npm run db:migrate` | Apply checked-in Drizzle migrations |
+| `npm run db:push` | Push the current schema during local prototyping |
 | `npm run db:studio` | Open Drizzle Studio against the configured database |
 
 Run `npx playwright install chromium` once before the first local Playwright run.
+
+See [docs/deployment.md](docs/deployment.md) for the Vercel and Neon production runbook.
 
 ## Stack
 

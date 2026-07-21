@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { AuthError, authenticateUser } from "@/lib/auth/service";
 import { createUserSession, getSessionCookie } from "@/lib/auth/session";
-import { getRequestUrl } from "@/lib/request-url";
+import { redirectToRequestOrigin } from "@/lib/request-url";
 
 export async function POST(request: NextRequest) {
   const formData = await request.formData();
@@ -12,17 +12,14 @@ export async function POST(request: NextRequest) {
       password: String(formData.get("password") ?? ""),
     });
     const session = await createUserSession(user.id);
-    const response = NextResponse.redirect(getRequestUrl("/"), 303);
+    const response = redirectToRequestOrigin("/");
 
     response.cookies.set(getSessionCookie(session.token, session.expiresAt, request));
 
     return response;
   } catch (error) {
     if (error instanceof AuthError) {
-      return NextResponse.redirect(
-        getRequestUrl(`/sign-in?error=${error.code}`),
-        303,
-      );
+      return redirectToRequestOrigin(`/sign-in?error=${error.code}`);
     }
 
     throw error;
