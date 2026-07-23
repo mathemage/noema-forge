@@ -48,7 +48,7 @@ export default async function Home({ searchParams }: HomePageProps) {
       title="Journal history"
       userEmail={user.email}
     >
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
+      <div className="grid items-start gap-4 sm:gap-5 lg:gap-6 xl:grid-cols-[minmax(0,1.04fr)_minmax(24rem,0.96fr)]">
         <JournalCaptureForm
           action="/entries"
           key="new-entry"
@@ -58,13 +58,14 @@ export default async function Home({ searchParams }: HomePageProps) {
           submitLabel="Save entry"
         />
 
-        <section className="rounded-3xl border border-border/80 bg-card/95 p-6 shadow-sm sm:p-8">
+        <section className="paper-panel p-5 sm:p-7 lg:p-8">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="space-y-2">
-              <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+              <p className="eyebrow">Private archive</p>
+              <h2 className="text-2xl font-semibold tracking-[-0.025em] text-foreground">
                 Search and browse
               </h2>
-              <p className="text-sm leading-6 text-muted sm:text-base">
+              <p className="max-w-lg text-sm leading-6 text-muted">
                 Your newest entries appear first. Search stays inside PostgreSQL.
               </p>
             </div>
@@ -72,14 +73,14 @@ export default async function Home({ searchParams }: HomePageProps) {
             <form className="flex w-full flex-col gap-3 sm:flex-row lg:max-w-md" method="get">
               <input
                 aria-label="Search entry text"
-                className="w-full rounded-full border border-border bg-white px-4 py-3 text-sm text-foreground outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-200"
+                className="journal-control w-full px-4 py-3 text-sm"
                 defaultValue={query}
                 name="q"
                 placeholder="Search entry text"
                 type="search"
               />
               <button
-                className="inline-flex items-center justify-center rounded-full bg-slate-950 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800"
+                className="button-primary inline-flex items-center justify-center px-5 py-3 text-sm font-semibold"
                 type="submit"
               >
                 Search
@@ -89,17 +90,24 @@ export default async function Home({ searchParams }: HomePageProps) {
 
           <div className="mt-6 space-y-4">
             {entries.length === 0 ? (
-                <div className="rounded-3xl border border-dashed border-border bg-slate-50/70 px-5 py-8 text-sm leading-6 text-muted">
+              <div className="inset-panel border-dashed px-5 py-8 text-sm leading-6 text-muted">
+                <p className="font-semibold text-foreground">The archive is quiet.</p>
+                <p className="mt-1">
                   {query
                     ? `No entries match "${query}" yet.`
                     : "No entries yet. Save your first capture to start the archive."}
-                </div>
-              ) : (
+                </p>
+              </div>
+            ) : (
               entries.map((entry) => (
                 <article
                   key={entry.id}
-                  className="rounded-3xl border border-border/80 bg-slate-50/70 p-5"
+                  className="inset-panel relative overflow-hidden p-5"
                 >
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-y-0 left-0 w-1 bg-accent/70"
+                  />
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div className="min-w-0 flex-1 space-y-3">
                       <p className="whitespace-pre-wrap text-sm leading-6 text-foreground sm:text-base">
@@ -114,13 +122,13 @@ export default async function Home({ searchParams }: HomePageProps) {
 
                     <div className="flex flex-wrap gap-3 text-sm">
                       <a
-                        className="inline-flex items-center justify-center rounded-full border border-border bg-white px-4 py-2 font-medium text-foreground transition hover:bg-slate-100"
+                        className="button-secondary inline-flex items-center justify-center px-4 py-2 font-semibold"
                         href={`/entries/${entry.id}`}
                       >
                         View
                       </a>
                       <a
-                        className="inline-flex items-center justify-center rounded-full border border-border bg-white px-4 py-2 font-medium text-foreground transition hover:bg-slate-100"
+                        className="button-secondary inline-flex items-center justify-center px-4 py-2 font-semibold"
                         href={`/entries/${entry.id}/edit`}
                       >
                         Edit

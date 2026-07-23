@@ -1,11 +1,20 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f5f7fb;
-  --card: #ffffff;
-  --foreground: #111827;
-  --muted: #4b5563;
-  --border: #dbe4f0;
+  --background: #e9e6df;
+  --card: #fbfaf6;
+  --foreground: #202321;
+  --muted: #646861;
+  --border: #cec8bc;
+  --border-strong: #aaa398;
+  --ink: #202526;
+  --accent: #b45f3f;
+  --accent-strong: #83452f;
+  --sage: #3f7166;
+  --sage-soft: #dce9e4;
+  --danger: #923f3f;
+  --danger-soft: #f3dddd;
+  --focus: #9d4d32;
 }
 
 @theme inline {
@@ -14,9 +23,19 @@
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-ink: var(--ink);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-sage: var(--sage);
+  --color-sage-soft: var(--sage-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
   --font-sans:
-    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+    "Avenir Next", Avenir, "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-display:
+    "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, Georgia,
+    serif;
   --font-mono:
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
     monospace;
@@ -29,18 +48,307 @@
 html {
   background: var(--background);
   color: var(--foreground);
+  color-scheme: light;
+  text-rendering: optimizeLegibility;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
   background:
-    radial-gradient(circle at top, rgba(59, 130, 246, 0.14), transparent 28%),
-    linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+    radial-gradient(circle at 8% -8%, rgb(255 255 255 / 90%) 0, transparent 34rem),
+    radial-gradient(circle at 94% 4%, rgb(184 150 128 / 16%) 0, transparent 30rem),
+    linear-gradient(145deg, #f2f0ea 0%, var(--background) 48%, #dedbd3 100%);
   color: var(--foreground);
   font-family: var(--font-sans);
 }
 
+body::before {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image: radial-gradient(rgb(69 62 53 / 8%) 0.65px, transparent 0.65px);
+  background-size: 7px 7px;
+  content: "";
+  opacity: 0.28;
+  pointer-events: none;
+}
+
+::selection {
+  background: #dfbbaa;
+  color: #2b211c;
+}
+
 a {
   color: inherit;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+textarea {
+  resize: vertical;
+}
+
+::placeholder {
+  color: #8a8982;
+  opacity: 1;
+}
+
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+@supports not selector(:focus-visible) {
+  :where(a, button, input, select, textarea):focus {
+    outline: 3px solid var(--focus);
+    outline-offset: 3px;
+  }
+}
+
+.paper-panel {
+  border: 1px solid rgb(170 163 152 / 62%);
+  border-radius: 1.75rem;
+  background:
+    linear-gradient(145deg, rgb(255 255 252 / 97%), rgb(247 244 237 / 97%));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 95%),
+    0 1px 2px rgb(54 48 41 / 9%),
+    0 22px 60px rgb(54 48 41 / 10%);
+}
+
+.ink-panel {
+  border: 1px solid rgb(70 76 75 / 82%);
+  border-radius: 1.75rem;
+  background:
+    radial-gradient(circle at 100% 0%, rgb(180 95 63 / 18%) 0, transparent 27rem),
+    radial-gradient(circle at 5% 100%, rgb(85 122 111 / 14%) 0, transparent 24rem),
+    linear-gradient(145deg, #2a2f2f 0%, var(--ink) 52%, #171b1b 100%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 10%),
+    inset 0 -1px 0 rgb(0 0 0 / 28%),
+    0 26px 72px rgb(44 39 34 / 22%);
+}
+
+.inset-panel {
+  border: 1px solid rgb(190 183 171 / 75%);
+  border-radius: 1.2rem;
+  background:
+    linear-gradient(145deg, rgb(255 255 252 / 78%), rgb(235 231 222 / 78%));
+  box-shadow:
+    inset 0 1px 2px rgb(54 48 41 / 5%),
+    0 1px 0 rgb(255 255 255 / 78%);
+}
+
+.reflection-panel {
+  border: 1px solid rgb(184 152 131 / 48%);
+  border-radius: 1.4rem;
+  background:
+    radial-gradient(circle at 100% 0%, rgb(180 95 63 / 9%) 0, transparent 22rem),
+    linear-gradient(145deg, #f8f4ed 0%, #efeae1 100%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 80%),
+    0 1px 2px rgb(54 48 41 / 5%);
+}
+
+.journal-control {
+  border: 1px solid var(--border);
+  border-radius: 0.95rem;
+  background: rgb(255 255 252 / 88%);
+  color: var(--foreground);
+  box-shadow:
+    inset 0 1px 2px rgb(54 48 41 / 4%),
+    0 1px 0 rgb(255 255 255 / 92%);
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.journal-control:hover:not(:disabled) {
+  border-color: var(--border-strong);
+  background: #fffefa;
+}
+
+.journal-control:focus-visible {
+  border-color: var(--accent);
+  background: #fffefa;
+  box-shadow:
+    inset 0 1px 2px rgb(54 48 41 / 3%),
+    0 0 0 4px rgb(180 95 63 / 12%);
+}
+
+.journal-control:disabled,
+.journal-control:read-only {
+  color: #777a74;
+  background: #ece9e2;
+}
+
+.button-primary,
+.button-secondary,
+.button-inverse,
+.button-quiet,
+.capture-tab {
+  border-radius: 0.9rem;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.button-primary {
+  border: 1px solid #713b2a;
+  background: linear-gradient(180deg, #bd6847 0%, #914b34 100%);
+  color: #fffaf5;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 22%),
+    0 9px 20px rgb(112 60 42 / 20%);
+}
+
+.button-primary:hover:not(:disabled) {
+  background: linear-gradient(180deg, #c87351 0%, #9d5239 100%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 25%),
+    0 11px 24px rgb(112 60 42 / 25%);
+  transform: translateY(-1px);
+}
+
+.button-secondary {
+  border: 1px solid var(--border);
+  background: rgb(255 255 252 / 72%);
+  color: #303431;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 85%);
+}
+
+.button-secondary:hover:not(:disabled) {
+  border-color: var(--border-strong);
+  background: #fffefa;
+  transform: translateY(-1px);
+}
+
+.button-inverse {
+  border: 1px solid rgb(236 227 216 / 45%);
+  background: linear-gradient(180deg, #fefaf4 0%, #ddd6cb 100%);
+  color: #252827;
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 10px 24px rgb(0 0 0 / 22%);
+}
+
+.button-inverse:hover:not(:disabled) {
+  background: linear-gradient(180deg, #fff 0%, #ece6dd 100%);
+  transform: translateY(-1px);
+}
+
+.button-quiet {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+}
+
+.button-quiet:hover:not(:disabled) {
+  background: rgb(78 72 65 / 7%);
+  color: var(--foreground);
+}
+
+.button-primary:active:not(:disabled),
+.button-secondary:active:not(:disabled),
+.button-inverse:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.button-primary:disabled,
+.button-secondary:disabled,
+.button-inverse:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+  transform: none;
+}
+
+.capture-tab {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+}
+
+.capture-tab:hover:not(:disabled) {
+  background: rgb(255 255 252 / 68%);
+  color: var(--foreground);
+}
+
+.capture-tab[aria-pressed="true"] {
+  border-color: rgb(129 69 47 / 24%);
+  background: linear-gradient(180deg, #bd6847 0%, #965039 100%);
+  color: #fffaf5;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 20%),
+    0 7px 16px rgb(112 60 42 / 17%);
+}
+
+.brand-mark {
+  display: inline-flex;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 0.9rem;
+  background:
+    linear-gradient(145deg, rgb(255 255 255 / 14%), rgb(255 255 255 / 5%));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 14%),
+    0 8px 22px rgb(0 0 0 / 16%);
+  color: #f4e9df;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.eyebrow {
+  color: var(--accent-strong);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.status-danger,
+.status-success {
+  border-radius: 1rem;
+  padding: 0.85rem 1rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.status-danger {
+  border: 1px solid rgb(146 63 63 / 24%);
+  background: var(--danger-soft);
+  color: #762f2f;
+}
+
+.status-success {
+  border: 1px solid rgb(63 113 102 / 26%);
+  background: var(--sage-soft);
+  color: #315c53;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
