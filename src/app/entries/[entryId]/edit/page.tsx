@@ -38,7 +38,7 @@ export default async function EditEntryPage({
     <JournalChrome
       actions={
         <a
-          className="inline-flex items-center justify-center rounded-full border border-border bg-white px-4 py-2 font-medium text-foreground transition hover:bg-slate-100"
+          className="button-inverse inline-flex items-center justify-center px-4 py-2 font-semibold"
           href={`/entries/${entry.id}`}
         >
           Back to entry

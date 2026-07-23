@@ -12,20 +12,30 @@ export function EntryMetadata({
   const showUpdated = createdAt.getTime() !== updatedAt.getTime();
 
   return (
-    <dl className="grid gap-3 text-sm text-muted sm:grid-cols-3">
-      <div className="rounded-2xl border border-border bg-slate-50/70 p-3">
-        <dt className="font-medium text-foreground">Created</dt>
-        <dd className="mt-1">{formatTimestamp(createdAt)}</dd>
+    <dl className="grid gap-2 text-sm text-muted sm:grid-cols-3">
+      <div className="rounded-xl border border-border/80 bg-card/65 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]">
+        <dt className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-accent-strong">
+          Created
+        </dt>
+        <dd className="mt-1.5 font-medium text-foreground">
+          {formatTimestamp(createdAt)}
+        </dd>
       </div>
-      <div className="rounded-2xl border border-border bg-slate-50/70 p-3">
-        <dt className="font-medium text-foreground">Updated</dt>
-        <dd className="mt-1">
+      <div className="rounded-xl border border-border/80 bg-card/65 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]">
+        <dt className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-accent-strong">
+          Updated
+        </dt>
+        <dd className="mt-1.5 font-medium text-foreground">
           {showUpdated ? formatTimestamp(updatedAt) : "Not edited yet"}
         </dd>
       </div>
-      <div className="rounded-2xl border border-border bg-slate-50/70 p-3">
-        <dt className="font-medium text-foreground">Source</dt>
-        <dd className="mt-1">{formatCaptureSource(source)}</dd>
+      <div className="rounded-xl border border-border/80 bg-card/65 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]">
+        <dt className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-accent-strong">
+          Source
+        </dt>
+        <dd className="mt-1.5 font-medium text-foreground">
+          {formatCaptureSource(source)}
+        </dd>
       </div>
     </dl>
   );

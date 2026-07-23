@@ -41,13 +41,13 @@ export default async function EntryDetailPage({
       actions={
         <>
           <Link
-            className="inline-flex items-center justify-center rounded-full border border-border bg-white px-4 py-2 font-medium text-foreground transition hover:bg-slate-100"
+            className="button-inverse inline-flex items-center justify-center px-4 py-2 font-semibold"
             href="/"
           >
             Back to journal
           </Link>
           <a
-            className="inline-flex items-center justify-center rounded-full border border-border bg-white px-4 py-2 font-medium text-foreground transition hover:bg-slate-100"
+            className="button-inverse inline-flex items-center justify-center px-4 py-2 font-semibold"
             href={`/entries/${entry.id}/edit`}
           >
             Edit entry
@@ -60,9 +60,9 @@ export default async function EntryDetailPage({
       title="Entry detail"
       userEmail={user.email}
     >
-      <section className="rounded-3xl border border-border/80 bg-card/95 p-6 shadow-sm sm:p-8">
+      <section className="paper-panel p-5 sm:p-7 lg:p-8">
         {message && entryMessages[message] ? (
-          <div className="mb-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+          <div className="status-success mb-5" role="status">
             {entryMessages[message]}
           </div>
         ) : null}
@@ -74,8 +74,12 @@ export default async function EntryDetailPage({
             updatedAt={entry.updatedAt}
           />
 
-          <article className="rounded-3xl border border-border bg-slate-50/70 p-5">
-            <div className="whitespace-pre-wrap text-base leading-7 text-foreground">
+          <article className="inset-panel relative overflow-hidden p-5 sm:p-7">
+            <span
+              aria-hidden="true"
+              className="absolute inset-y-0 left-0 w-1 bg-accent/70"
+            />
+            <div className="whitespace-pre-wrap text-base leading-8 text-foreground">
               {entry.body}
             </div>
           </article>

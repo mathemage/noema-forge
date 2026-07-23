@@ -20,16 +20,19 @@ export function JournalEntryForm({
   submitLabel,
 }: JournalEntryFormProps) {
   return (
-    <section className="rounded-3xl border border-border/80 bg-card/95 p-6 shadow-sm sm:p-8">
+    <section className="paper-panel p-5 sm:p-7 lg:p-8">
       <div className="space-y-2">
-        <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+        <p className="eyebrow">Journal editor</p>
+        <h2 className="text-2xl font-semibold tracking-[-0.025em] text-foreground">
           {heading}
         </h2>
-        <p className="text-sm leading-6 text-muted sm:text-base">{description}</p>
+        <p className="max-w-2xl text-sm leading-6 text-muted sm:text-base">
+          {description}
+        </p>
       </div>
 
       {error ? (
-        <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+        <div className="status-danger mt-4" role="alert">
           {error}
         </div>
       ) : null}
@@ -40,7 +43,7 @@ export function JournalEntryForm({
             Entry
           </label>
           <textarea
-            className="min-h-56 w-full rounded-3xl border border-border bg-white px-4 py-3 text-base text-foreground outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-200"
+            className="journal-control min-h-64 w-full px-4 py-3 text-base leading-7"
             defaultValue={body ?? ""}
             id="body"
             maxLength={JOURNAL_ENTRY_BODY_MAX_LENGTH}
@@ -56,14 +59,14 @@ export function JournalEntryForm({
 
         <div className="flex flex-wrap items-center gap-3">
           <button
-            className="inline-flex items-center justify-center rounded-full bg-slate-950 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800"
+            className="button-primary inline-flex items-center justify-center px-5 py-3 text-sm font-semibold"
             type="submit"
           >
             {submitLabel}
           </button>
           {cancelHref ? (
             <a
-              className="inline-flex items-center justify-center rounded-full border border-border bg-white px-5 py-3 text-sm font-medium text-foreground transition hover:bg-slate-50"
+              className="button-secondary inline-flex items-center justify-center px-5 py-3 text-sm font-semibold"
               href={cancelHref}
             >
               Cancel

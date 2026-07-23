@@ -398,34 +398,37 @@ export function JournalCaptureForm({
     composedEntryBody.length > JOURNAL_ENTRY_BODY_MAX_LENGTH;
 
   return (
-    <section className="rounded-3xl border border-border/80 bg-card/95 p-6 shadow-sm sm:p-8">
+    <section className="paper-panel p-5 sm:p-7 lg:p-8">
       <div className="space-y-2">
-        <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+        <p className="eyebrow">Capture workspace</p>
+        <h2 className="text-2xl font-semibold tracking-[-0.025em] text-foreground">
           {heading}
         </h2>
-        <p className="text-sm leading-6 text-muted sm:text-base">{description}</p>
+        <p className="max-w-2xl text-sm leading-6 text-muted sm:text-base">
+          {description}
+        </p>
       </div>
 
       {error ? (
-        <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+        <div className="status-danger mt-4" role="alert">
           {error}
         </div>
       ) : null}
 
-      <form action={action} className="mt-6 space-y-4" method="post">
+      <form action={action} className="mt-6 space-y-5" method="post">
         <div className="space-y-3">
-          <div aria-label="Capture mode" className="flex flex-wrap gap-2" role="group">
+          <div
+            aria-label="Capture mode"
+            className="inset-panel grid grid-cols-3 gap-1 p-1"
+            role="group"
+          >
             {captureSourceValues.map((mode) => {
               const active = source === mode;
 
               return (
                 <button
                   aria-pressed={active}
-                  className={`inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-medium transition ${
-                    active
-                      ? "bg-slate-950 text-white"
-                      : "border border-border bg-white text-foreground hover:bg-slate-50"
-                  }`}
+                  className="capture-tab inline-flex min-h-11 items-center justify-center px-2 py-2 text-center text-xs font-semibold sm:px-4 sm:text-sm"
                   key={mode}
                   onClick={() => selectSource(mode)}
                   type="button"
@@ -436,7 +439,7 @@ export function JournalCaptureForm({
             })}
           </div>
 
-          <div className="rounded-3xl border border-border bg-slate-50/70 p-4 text-sm text-muted">
+          <div className="inset-panel p-4 text-sm leading-6 text-muted sm:p-5">
             {source === "typed" ? (
               <p>Write directly in the editor and save it as a typed journal entry.</p>
             ) : null}
@@ -448,7 +451,7 @@ export function JournalCaptureForm({
                 </p>
                 <div className="flex flex-wrap items-center gap-3">
                   <button
-                    className="inline-flex items-center justify-center rounded-full bg-slate-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
+                    className="button-primary inline-flex items-center justify-center px-4 py-2 text-sm font-semibold"
                     onClick={() => {
                       if (isDictating) {
                         stopDictation();
@@ -465,20 +468,25 @@ export function JournalCaptureForm({
                     Dictated text lands in the same editor below.
                   </span>
                 </div>
-                {voiceMessage ? <p className="text-xs leading-5 text-sky-700">{voiceMessage}</p> : null}
+                {voiceMessage ? (
+                  <p className="text-xs leading-5 text-sage">{voiceMessage}</p>
+                ) : null}
                 {voiceError ? (
-                  <p className="text-xs leading-5 text-rose-700">{voiceError}</p>
+                  <p className="text-xs leading-5 text-danger">{voiceError}</p>
                 ) : null}
               </div>
             ) : null}
 
             {source === "ocr" ? (
               <div className="space-y-3">
-                <label className="block space-y-2 text-sm font-medium text-foreground" htmlFor="ocr-file">
+                <label
+                  className="block space-y-2 text-sm font-semibold text-foreground"
+                  htmlFor="ocr-file"
+                >
                   <span>Handwritten note image</span>
                   <input
                     accept="image/*"
-                    className="block w-full rounded-2xl border border-border bg-white px-4 py-3 text-sm text-foreground file:mr-3 file:rounded-full file:border-0 file:bg-slate-950 file:px-4 file:py-2 file:text-sm file:font-medium file:text-white"
+                    className="journal-control block w-full px-3 py-3 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-ink file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
                     id="ocr-file"
                     onChange={handleOcrUpload}
                     type="file"
@@ -488,26 +496,28 @@ export function JournalCaptureForm({
                   Upload a clear handwriting photo or scan. The extracted text replaces the editor draft so you can review it before saving.
                 </p>
                 {ocrMessage ? (
-                  <p className="text-xs leading-5 text-sky-700">
+                  <p className="text-xs leading-5 text-sage">
                     {ocrMessage}
                     {ocrProgress !== null && ocrProgress > 0 && ocrProgress < 1
                       ? ` (${Math.round(ocrProgress * 100)}%)`
                       : ""}
                   </p>
                 ) : null}
-                {ocrError ? <p className="text-xs leading-5 text-rose-700">{ocrError}</p> : null}
+                {ocrError ? (
+                  <p className="text-xs leading-5 text-danger">{ocrError}</p>
+                ) : null}
               </div>
             ) : null}
           </div>
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground" htmlFor="body">
+          <label className="text-sm font-semibold text-foreground" htmlFor="body">
             Entry
           </label>
           <input name="source" type="hidden" value={source} />
           <textarea
-            className="min-h-56 w-full rounded-3xl border border-border bg-white px-4 py-3 text-base text-foreground outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-200"
+            className="journal-control min-h-64 w-full px-4 py-3 text-base leading-7"
             id="body"
             maxLength={JOURNAL_ENTRY_BODY_MAX_LENGTH}
             name="body"
@@ -534,10 +544,10 @@ export function JournalCaptureForm({
             </p>
           ) : null}
           {voiceError && source !== "voice" ? (
-            <p className="text-xs leading-5 text-rose-700">{voiceError}</p>
+            <p className="text-xs leading-5 text-danger">{voiceError}</p>
           ) : null}
           {isComposedEntryTooLong ? (
-            <p className="text-xs leading-5 text-rose-700" role="alert">
+            <p className="text-xs leading-5 text-danger" role="alert">
               Shorten the raw entry or reflection before saving. The saved text
               would be {composedEntryBody.length.toLocaleString()} characters,
               over the {journalEntryBodyMaxLengthLabel}-character limit.
@@ -545,9 +555,10 @@ export function JournalCaptureForm({
           ) : null}
         </div>
 
-        <section className="space-y-4 rounded-3xl border border-border bg-slate-50/70 p-4">
+        <section className="reflection-panel space-y-5 p-4 sm:p-5">
           <div className="space-y-1">
-            <h3 className="text-lg font-semibold tracking-tight text-foreground">
+            <p className="eyebrow">Distill the thought</p>
+            <h3 className="text-xl font-semibold tracking-[-0.02em] text-foreground">
               Guided reflection
             </h3>
             <p className="text-sm leading-6 text-muted">
@@ -557,10 +568,13 @@ export function JournalCaptureForm({
           </div>
 
           <div className="grid gap-4 lg:grid-cols-3">
-            <label className="space-y-2 text-sm font-medium text-foreground" htmlFor="feeling">
+            <label
+              className="space-y-2 text-sm font-semibold text-foreground"
+              htmlFor="feeling"
+            >
               <span>Feeling</span>
               <textarea
-                className="min-h-28 w-full rounded-3xl border border-border bg-white px-4 py-3 text-sm text-foreground outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-200"
+                className="journal-control min-h-32 w-full px-4 py-3 text-sm leading-6"
                 id="feeling"
                 maxLength={REFLECTION_FIELD_MAX_LENGTH}
                 name="feeling"
@@ -573,10 +587,13 @@ export function JournalCaptureForm({
               />
             </label>
 
-            <label className="space-y-2 text-sm font-medium text-foreground" htmlFor="rootIssue">
+            <label
+              className="space-y-2 text-sm font-semibold text-foreground"
+              htmlFor="rootIssue"
+            >
               <span>Root issue</span>
               <textarea
-                className="min-h-28 w-full rounded-3xl border border-border bg-white px-4 py-3 text-sm text-foreground outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-200"
+                className="journal-control min-h-32 w-full px-4 py-3 text-sm leading-6"
                 id="rootIssue"
                 maxLength={REFLECTION_FIELD_MAX_LENGTH}
                 name="rootIssue"
@@ -589,10 +606,13 @@ export function JournalCaptureForm({
               />
             </label>
 
-            <label className="space-y-2 text-sm font-medium text-foreground" htmlFor="nextStep">
+            <label
+              className="space-y-2 text-sm font-semibold text-foreground"
+              htmlFor="nextStep"
+            >
               <span>Next step</span>
               <textarea
-                className="min-h-28 w-full rounded-3xl border border-border bg-white px-4 py-3 text-sm text-foreground outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-200"
+                className="journal-control min-h-32 w-full px-4 py-3 text-sm leading-6"
                 id="nextStep"
                 maxLength={REFLECTION_FIELD_MAX_LENGTH}
                 name="nextStep"
@@ -606,7 +626,7 @@ export function JournalCaptureForm({
             </label>
           </div>
 
-          <div className="space-y-3 rounded-3xl border border-border bg-white p-4">
+          <div className="rounded-[1.15rem] border border-border/80 bg-card/80 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="space-y-1">
                 <h4 className="text-sm font-semibold text-foreground">
@@ -625,7 +645,7 @@ export function JournalCaptureForm({
               <button
                 aria-busy={isRequestingAssist}
                 aria-describedby="reflection-assist-description"
-                className="inline-flex items-center justify-center rounded-full border border-border bg-white px-4 py-2 text-sm font-medium text-foreground transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                className="button-secondary inline-flex shrink-0 items-center justify-center px-4 py-2 text-sm font-semibold"
                 disabled={isRequestingAssist}
                 onClick={requestReflectionAssistance}
                 type="button"
@@ -635,13 +655,13 @@ export function JournalCaptureForm({
             </div>
 
             {assistance ? (
-              <div className="space-y-3 rounded-2xl bg-slate-50 px-4 py-3 text-sm leading-6 text-foreground">
+              <div className="inset-panel mt-4 space-y-3 px-4 py-3 text-sm leading-6 text-foreground">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-strong">
                     {assistance.source === "ollama" ? "Ollama" : "Local guidance"}
                   </p>
                   <button
-                    className="text-xs font-medium text-muted underline-offset-4 hover:text-foreground hover:underline"
+                    className="button-quiet px-2 py-1 text-xs font-semibold"
                     onClick={clearAssistance}
                     type="button"
                   >
@@ -689,7 +709,7 @@ export function JournalCaptureForm({
             ) : null}
 
             {assistError ? (
-              <p className="text-xs leading-5 text-rose-700" role="alert">
+              <p className="mt-3 text-xs leading-5 text-danger" role="alert">
                 {assistError}
               </p>
             ) : null}
@@ -698,7 +718,7 @@ export function JournalCaptureForm({
 
         <div className="flex flex-wrap items-center gap-3">
           <button
-            className="inline-flex items-center justify-center rounded-full bg-slate-950 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+            className="button-primary inline-flex w-full items-center justify-center px-5 py-3 text-sm font-semibold sm:w-auto"
             disabled={isComposedEntryTooLong || isRequestingAssist}
             type="submit"
           >

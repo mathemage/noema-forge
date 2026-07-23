@@ -5,7 +5,7 @@ import { AuthPage } from "@/components/auth-page";
 
 describe("AuthPage", () => {
   it("renders registration and sign-in sections with auth feedback", () => {
-    render(
+    const { container } = render(
       <AuthPage
         appName="NoemaForge"
         error="invalid-credentials"
@@ -33,5 +33,13 @@ describe("AuthPage", () => {
         /This environment is using the optional Auth\.js credentials session path\./,
       ),
     ).toBeInTheDocument();
+
+    expect(
+      screen.getByRole("region", { name: "NoemaForge journal access" }),
+    ).toBeInTheDocument();
+    expect(container.querySelector(".ink-panel")).toBeInTheDocument();
+    expect(container.querySelector(".paper-panel")).toBeInTheDocument();
+    expect(container.querySelectorAll(".journal-control")).toHaveLength(4);
+    expect(screen.getByRole("alert")).toHaveClass("status-danger");
   });
 });
