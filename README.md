@@ -4,6 +4,10 @@
 
 NoemaForge is a journaling web app focused on turning raw thoughts into clearer, searchable reflections.
 
+It is a self-guided reflection practice, not therapy. It is not a therapist, it does not diagnose,
+and it is not a substitute for professional care. If you are in crisis, contact your local emergency
+services or a crisis line.
+
 ## Local setup
 
 1. Copy the example environment file: `cp .env.example .env.local`
@@ -51,4 +55,5 @@ See [docs/deployment.md](docs/deployment.md) for the Vercel and Neon production 
 - Vitest, Testing Library, and Playwright for automated coverage
 - GitHub Actions CI for linting and test automation
 
-See [plan.md](plan.md) for the roadmap and [PHILOSOPHY.md](PHILOSOPHY.md) for the longer-form product rationale.
+See [plan_v2.0.0.md](plan_v2.0.0.md) for the current roadmap, [plan_v1.0.0.md](plan_v1.0.0.md) for the
+historical v1 roadmap, and [PHILOSOPHY.md](PHILOSOPHY.md) for the longer-form product rationale.
