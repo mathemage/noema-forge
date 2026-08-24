@@ -551,6 +551,30 @@ Audited entries were re-checked against the source by an adversarial verificatio
 22. *A Meta-Analysis of the Effects of Mental Contrasting With Implementation Intentions* (audited).
     https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8149892/
 
+## Recommended model per item
+
+Each roadmap item's GitHub issue carries a ready-to-paste prompt for both Claude Code and Codex.
+Effort refers to the reasoning-effort setting: Claude Code exposes low through xhigh, GPT-5.6
+exposes none through max.
+
+| Item | Anthropic | Effort | OpenAI | Effort |
+| --- | --- | --- | --- | --- |
+| 1 Roadmap | Opus 5 | xhigh | GPT-5.6 Sol | xhigh |
+| 2 Structured reflection model | Opus 5 | xhigh | GPT-5.6 Sol | xhigh |
+| 3 Safety and severity routing | Opus 5 | high | GPT-5.6 Sol | high |
+| 4 Five-move session | Opus 5 | high | GPT-5.6 Sol | high |
+| 5 Challenge-oriented assist | Opus 5 | xhigh | GPT-5.6 Sol | xhigh |
+| 6 Decision journal | Opus 5 | high | GPT-5.6 Sol | high |
+| 7 Practice loop | Sonnet | high | GPT-5.6 Terra | high |
+| 8 Review and resurfacing | Opus 5 | high | GPT-5.6 Sol | high |
+| 9 Accountability | Sonnet | high | GPT-5.6 Terra | high |
+| 10 Privacy hardening | Opus 5 | xhigh | GPT-5.6 Sol | xhigh |
+
+The two items dropped to the balanced tier, 7 and 9, are scoped and rule-driven once their
+preceding items land. Items 2, 5, and 10 sit at xhigh because a silent mistake in a data
+migration, an anti-sycophancy prompt contract, or a deletion path is expensive and hard to
+detect after the fact.
+
 ## Shared templates
 
 ### Shared PR template
