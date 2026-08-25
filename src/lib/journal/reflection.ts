@@ -84,3 +84,123 @@ export function composeJournalEntryBody(input: GuidedReflectionInput) {
 
   return sections.join("\n\n").trim();
 }
+
+const RAW_CAPTURE_HEADING = "Raw capture:\n";
+const GUIDED_REFLECTION_HEADING = "\n\nGuided reflection:";
+const MANUAL_HEADINGS = [
+  { heading: "\n\nFeeling:\n", key: "feeling" },
+  { heading: "\n\nRoot issue:\n", key: "rootIssue" },
+  { heading: "\n\nNext step:\n", key: "nextStep" },
+] as const;
+const ASSISTANCE_HEADINGS = [
+  { heading: "\n\nOllama assist:", source: "ollama" },
+  { heading: "\n\nLocal guidance:", source: "fallback" },
+  { heading: "\n\nReflection assist:", source: undefined },
+] as const;
+const ASSISTANCE_OUTPUT_HEADINGS = [
+  { heading: "\n\nFollow-up question:\n", key: "followUpQuestion" },
+  { heading: "\n\nSuggestions:\n", key: "suggestions" },
+] as const;
+
+type SectionKey =
+  | "assistance"
+  | "feeling"
+  | "followUpQuestion"
+  | "nextStep"
+  | "rootIssue"
+  | "suggestions";
+
+// A heading that occurs again later cannot be attributed to one section, so it
+// is reported as absent and the round-trip check below rejects the entry.
+function findHeading(text: string, heading: string, from: number) {
+  const index = text.indexOf(heading, from);
+
+  if (index === -1 || text.includes(heading, index + 1)) {
+    return -1;
+  }
+
+  return index;
+}
+
+function findAssistanceHeading(text: string, from: number) {
+  const matches = ASSISTANCE_HEADINGS.map((candidate) => ({
+    ...candidate,
+    index: findHeading(text, candidate.heading, from),
+  })).filter((candidate) => candidate.index !== -1);
+
+  return matches.length === 1 ? matches[0] : null;
+}
+
+/**
+ * The inverse of `composeJournalEntryBody()`. Returns `null` for any text this
+ * function cannot reproduce exactly, so the caller keeps it as a raw capture.
+ */
+export function parseJournalEntryBody(text: string): GuidedReflectionInput | null {
+  if (!text.startsWith(RAW_CAPTURE_HEADING)) {
+    return null;
+  }
+
+  const guidedIndex = findHeading(
+    text,
+    GUIDED_REFLECTION_HEADING,
+    RAW_CAPTURE_HEADING.length,
+  );
+
+  if (guidedIndex === -1) {
+    return null;
+  }
+
+  const sections: { headingIndex: number; key: SectionKey; valueIndex: number }[] = [];
+  let cursor = guidedIndex + GUIDED_REFLECTION_HEADING.length;
+
+  function takeSection(key: SectionKey, heading: string, headingIndex: number) {
+    sections.push({ headingIndex, key, valueIndex: headingIndex + heading.length });
+    cursor = headingIndex + heading.length;
+  }
+
+  for (const { heading, key } of MANUAL_HEADINGS) {
+    const index = findHeading(text, heading, cursor);
+
+    if (index !== -1) {
+      takeSection(key, heading, index);
+    }
+  }
+
+  const assistance = findAssistanceHeading(text, cursor);
+
+  if (assistance) {
+    takeSection("assistance", assistance.heading, assistance.index);
+  }
+
+  for (const { heading, key } of ASSISTANCE_OUTPUT_HEADINGS) {
+    const index = findHeading(text, heading, cursor);
+
+    if (index !== -1) {
+      takeSection(key, heading, index);
+    }
+  }
+
+  const values = new Map<SectionKey, string>();
+
+  sections.forEach((section, position) => {
+    values.set(
+      section.key,
+      text.slice(section.valueIndex, sections[position + 1]?.headingIndex ?? text.length),
+    );
+  });
+
+  const suggestionsValue = values.get("suggestions");
+  const parsed: GuidedReflectionInput = {
+    assistanceSource: assistance?.source,
+    body: text.slice(RAW_CAPTURE_HEADING.length, guidedIndex),
+    feeling: values.get("feeling"),
+    followUpQuestion: values.get("followUpQuestion"),
+    nextStep: values.get("nextStep"),
+    rootIssue: values.get("rootIssue"),
+    suggestions: suggestionsValue
+      ? suggestionsValue.split("\n").map((line) => line.replace(/^- /, ""))
+      : [],
+  };
+
+  return composeJournalEntryBody(parsed) === text ? parsed : null;
+}
