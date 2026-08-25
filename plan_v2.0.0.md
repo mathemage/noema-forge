@@ -140,7 +140,10 @@ version of the same idea.
     treatment, halving to -0.35 at 6-9 months [22]. Adding functional analysis and values
     clarification did not improve on the two basic elements: simple BA (self-monitoring plus
     activity scheduling) performed the same as complex BA. Dose showed no relationship to outcome
-    across a median of eight sessions.
+    across a median of eight sessions. Separately, in face-to-face therapy a network meta-analysis
+    could not detect a difference between cognitive restructuring alone, behavioural activation
+    alone, and full CBT, though the estimate for restructuring alone is markedly less precise
+    (SMD 0.57, 95% CI 0.08-1.07) and the authors call for more research on it [32].
     => Ship a fixed, finishable eight-session activation course built from two fields -- what you
     did and how you felt, then what you will schedule next -- and do not add components to it.
 
@@ -178,6 +181,11 @@ version of the same idea.
     Function words stay reliable in short texts while emotion words do not: 500 random words
     contained 56 pronouns but only 11 negative-emotion words. Dictionary counting misses negation
     and irony, with 21% of false positives from negation alone.
+    Word categories also violate ordinary psychometrics -- the article category scored Cronbach's
+    alpha of .14 across a 2,800-file corpus -- and cannot resolve irony or idiom; "mad" in "I'm mad
+    about him" scores as anger [36]. The one signal that did track benefit in expressive writing
+    was an *increase over sessions* in causal and insight words, not their level, and that finding
+    is reported without an effect size or sample size [36].
     => Ship no inferred score, trait profile, or percentile. Any word-level feature must be shown
     as highlighted matches in the user's own text that they can see and dismiss, never as a number
     about them.
@@ -401,8 +409,14 @@ Nothing else in v2 can be built until reflection is queryable and the safety lay
   - add a one-off consent and contraindication step before any prompt that invites writing about
     trauma, and keep such prompts out of the default flow
   - never block, censor, or refuse what the user writes in their own journal
+  - add a persistent safety-plan document with the published six ordered steps, moving from
+    self-managed coping through distraction, support contacts, and professional help to means
+    safety; describe it as plan storage and rehearsal, since the studied intervention bundled a
+    clinician-built plan with roughly four human follow-up calls [34]
 - **Success criteria:**
   - crisis resources are correct for the configured locale and reachable from every screen
+  - the safety plan is a first-class stored document rather than free text inside an entry, and
+    is retrievable in one step from anywhere in the app
   - check-in scores are stored, but a score alone never triggers an automated interpretation
   - the app states its limits before a user's first session, not buried in a settings page
   - trauma-writing prompts are unreachable without an explicit opt-in
@@ -438,7 +452,10 @@ numbering is kept stable because the GitHub issues reference it; only the build 
   - add a closure gate: a session completes only when it produces an insight, a decision, an open
     question, or a next action
   - rotate Distinguish and Explore wording across sessions from a protocol library so instructions
-    vary rather than repeat
+    vary rather than repeat; seed the library from published protocols, including the bounded
+    five-session structured writing arc [31] and a user-set thirty-minute worry window with a
+    one-tap daytime postpone capture, which returned d = 0.358 on worry duration over plain worry
+    logging and works best left unstructured inside the window [35]
   - add an optional self-distanced mode that switches Distill and Explore to second or third person
   - surface elapsed time and writing depth as information, never as a lock or a score
   - keep every move skippable except the closure gate
@@ -496,9 +513,17 @@ numbering is kept stable because the GitHub issues reference it; only the build 
   - add a decision session type covering what is being decided, what is known, what is uncertain,
     the options, what is valued here, what is feared, and what would change the decision
   - record a predicted outcome with a confidence level and a review date
-  - add a premortem prompt that asks the user to imagine the decision having gone badly and say why
+  - add a premortem prompt that asks the user to imagine the decision having gone badly and say
+    why, as a timed two-minute freewrite for failure reasons followed by a separate two-minute
+    freewrite for fixes; a generic "critique this" prompt moved confidence no more than doing
+    nothing, so the failure frame is the active part [38]
+  - capture confidence at three fixed checkpoints rather than one, because confidence drops after
+    generating failure reasons and partly rebounds after generating fixes [38]
   - resurface decisions on their review date to record the actual outcome against the prediction
   - add a calibration view comparing stated confidence against observed hit rate over time
+  - gate the first prediction behind a one-time primer under an hour; comparable sub-hour training
+    improved forecasting accuracy by 6-11% on Brier scores across four nine-month tournaments, and
+    single-session debiasing training has shown durable effects [39][40]
 - **Success criteria:**
   - a decision can be captured, predicted, reviewed, and scored without leaving the app
   - a decision due for review appears without the user having to remember it
@@ -509,6 +534,8 @@ numbering is kept stable because the GitHub issues reference it; only the build 
   - advice on what to decide
   - probability elicitation beyond a simple confidence level
   - importing decisions from outside the app
+  - any claim that the app improves calibration; the premortem evidence measured self-reported
+    confidence only and never checked whether confidence tracked accuracy [38]
 
 ### Roadmap item 7
 
@@ -605,7 +632,13 @@ What makes the archive worth having, and what keeps the practice alive.
     only an outcome, since imprecise plans confer no advantage over a bare intention [28]
   - prompt a short rehearsal write-through of the cue-to-action link after a plan is saved, rather
     than routing the plan into a pinned reminder card [28]
-  - add reminders tied to that plan, with an explanation of why the app is prompting
+  - add reminders tied to that plan, with an explanation of why the app is prompting, capped at
+    one a day and backing off automatically as idle days accumulate
+  - collect a commitment rating before opening the planning flow and route weakly held goals to a
+    why-this-matters prompt instead, since if-then plans only work on strongly held, currently
+    active goals [28]; note that document-delivered mental contrasting showed a smaller pooled
+    effect than experimenter-delivered (g = 0.277 vs 0.465), on a subgroup that excluded the only
+    large online trials [33]
   - frame all progress around completed sessions and closes, never around mood improving
   - track lapses without penalty, offer a shorter re-entry session after a gap, and offer plan
     revision after repeated failure rather than surfacing an adherence score
@@ -740,6 +773,14 @@ see "Evidence status" above.
     Analysis Methods*. https://www.cs.cmu.edu/~ylataus/files/TausczikPennebaker2010.pdf
 37. *Quantity and Quality of Homework Compliance: A Meta-Analysis* (audited; therapist-delivered
     CBT only). https://www.sciencedirect.com/science/article/abs/pii/S0005789416300296
+
+38. Veinott et al. (2010), *Evaluating the Effectiveness of the PreMortem Technique on Plan
+    Confidence* (N = 178, single lab experiment; facilitated and group-based).
+    https://web.archive.org/web/20200928015943/http://idl.iscram.org/files/veinott/2010/1049_Veinott_etal2010.pdf
+39. *Training improves probabilistic forecasting accuracy* (four nine-month tournaments;
+    sub-hour training improved Brier scores 6-11%). https://journal.sjdm.org/16/16511/jdm16511.pdf
+40. Morewedge et al., *Debiasing Decisions: Improved Decision Making With a Single Training
+    Intervention*. https://marketing.wharton.upenn.edu/wp-content/uploads/2019/12/01.06.2020-Morewedge-Carey-PAPER-Debiasing-Decisions.pdf
 
 ## Recommended model per item
 
