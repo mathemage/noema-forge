@@ -109,18 +109,23 @@ version of the same idea.
    reminders and human contact [9]. Extrinsic rewards can undermine intrinsic motivation for a
    task the user already finds worthwhile, and accountability framed around outcomes rather than
    process produces both lower adherence and greater distress [10]. In habit-formation data, a
-   single missed day did not derail acquisition: automaticity fell 0.29 points and the rebound on
-   resuming was indistinguishable from an ordinary day's gain [20].
+   single missed day did not derail acquisition: automaticity fell an average of 0.29 points, and
+   the paper describes the following-day gain (0.55, on the 67 of 140 missed occasions with a
+   next-day score) as comparable to an uninterrupted day's gain (0.79). No test of that difference
+   was run, so read it as descriptive rather than established [20].
    => No streaks, no points, no badges, and never a failure state after one missed day.
 
 7. **Reminders help, slightly.** In an 89-day micro-randomised trial of 1,255 users, a
    contextually tailored notification raised the chance of a self-monitoring entry within 24 hours
    by 3.9% relative (RR 1.039, 95% CI 1.01-1.08) [21]. The effect concentrated on weekends and did
-   not decay over twelve weeks. The trial capped sends at one per day and backed off as idle days
-   accumulated.
-   => Ship reminders, cap at one a day, back off automatically when the user goes quiet, and size
-   expectations at single-digit percentage lift rather than treating notifications as the
-   retention strategy.
+   not decay over twelve weeks. The trial capped sends at one per day and varied cadence
+   with idle time in a non-monotonic way: it waited 3 days for already-active users (under 2 days
+   idle, on the reasoning that they were engaged anyway), prompted most often at moderate
+   disengagement (2-9 days idle, every 2 days), then backed off to 6 days at 10-29 and 15 days at
+   30 or more [21].
+   => Ship reminders, cap at one a day, prompt hardest at moderate disengagement rather than at
+   either extreme, and size expectations at single-digit percentage lift rather than treating
+   notifications as the retention strategy.
 
 8. **Private articulation is enough; sharing adds nothing.** In three studies, reflection followed
    by explaining insights to another person was never significantly better than private reflection
@@ -180,7 +185,8 @@ version of the same idea.
     at a sample of 150 users, however much text each contributed [24]; a solo journal is n = 1.
     Function words stay reliable in short texts while emotion words do not: 500 random words
     contained 56 pronouns but only 11 negative-emotion words. Dictionary counting misses negation
-    and irony, with 21% of false positives from negation alone.
+    and irony; in a rating study of 100 statuses containing emotion-dictionary words, most errors
+    came from lexical ambiguity, with 21% from negation and 30% from other sources.
     Word categories also violate ordinary psychometrics -- the article category scored Cronbach's
     alpha of .14 across a 2,800-file corpus -- and cannot resolve irony or idiom; "mad" in "I'm mad
     about him" scores as anger [36]. The one signal that did track benefit in expressive writing
@@ -295,12 +301,14 @@ The pattern is worth carrying forward: numbers survived audit far better than in
 The recurring failure was a correct figure with an interpretive tail that reached past it, most
 often by generalising a therapist-delivered effect to unguided software.
 
-The second round of research reproduced that pattern exactly. Of the decision-journal claims, 14
-of 18 were confirmed, 3 overstated and 1 carried a wrong figure; of the reflective-practice
-claims, 17 of 18 were confirmed. Those corrections are folded in above. References [20], [23],
-[24], [25], [26], [34] and [35] carry verbatim source quotes and per-claim evidence grading but
-their verification pass was interrupted, so treat the rules citing them as well-sourced and not
-yet double-checked.
+The second round of research reproduced that pattern exactly. Across 105 verified claims covering
+references [17]-[27] and [34], [35], [38]-[40]: 88 confirmed, 16 overstated, 1 with a wrong figure.
+Every correction is folded in above. Both rounds together audited 230 claims and found roughly one
+in five carrying an interpretive tail past its source, while almost every underlying number held.
+
+Read the rules accordingly. The figures are reliable. The inferences drawn from them to a solo,
+unguided, software context are the part to keep questioning, because that is where this process
+failed most often and where the sources themselves are silent.
 
 Three limits are inherited from the sources themselves and cannot be designed away. The CBT
 component, homework-compliance, routine-outcome-monitoring, and safety-planning literatures are
@@ -416,8 +424,10 @@ Nothing else in v2 can be built until reflection is queryable and the safety lay
   - never block, censor, or refuse what the user writes in their own journal
   - add a persistent safety-plan document with the published six ordered steps, moving from
     self-managed coping through distraction, support contacts, and professional help to means
-    safety; describe it as plan storage and rehearsal, since the studied intervention bundled a
-    clinician-built plan with roughly four human follow-up calls [34]
+    safety; the studied intervention was associated with about half the rate of suicidal
+    behaviour (3.03% vs 5.29%) in a non-randomised cohort comparison, and it bundled a
+    clinician-built plan with roughly four human follow-up calls, so describe this feature as
+    plan storage and rehearsal rather than an equivalent [34]
 - **Success criteria:**
   - crisis resources are correct for the configured locale and reachable from every screen
   - the safety plan is a first-class stored document rather than free text inside an entry, and
@@ -460,7 +470,9 @@ numbering is kept stable because the GitHub issues reference it; only the build 
     vary rather than repeat; seed the library from published protocols, including the bounded
     five-session structured writing arc [31] and a user-set thirty-minute worry window with a
     one-tap daytime postpone capture, which returned d = 0.358 on worry duration over plain worry
-    logging and works best left unstructured inside the window [35]
+    logging and works best left unstructured inside the window; three of the eight samples were
+    delivered remotely (online, mobile app, and mail), which is unusually direct support for a
+    self-administered version [35]
   - add an optional self-distanced mode that switches Distill and Explore to second or third person
   - surface elapsed time and writing depth as information, never as a lock or a score
   - keep every move skippable except the closure gate
@@ -641,8 +653,12 @@ What makes the archive worth having, and what keeps the practice alive.
   outcome-framed accountability lowers adherence while raising distress
 - **Key changes:**
   - add an if-then plan composer using the published `And if <situation>, then I will <action>!`
-    frame as two bound fields, rejecting plans whose cue is only a date word or whose action names
-    only an outcome, since imprecise plans confer no advantage over a bare intention [28]
+    frame as two bound fields, rejecting plans whose cue is vague ("tomorrow") or whose action
+    names only an outcome ("eat healthily"), since imprecise plans confer no advantage over a bare
+    intention [28]. A precise clock time is a valid cue -- the source's own worked example is "if
+    it is Saturday morning at 10 a.m." -- but the habit-formation protocol bound practices to a
+    salient event occurring exactly once a day instead [20], so support both and let the user
+    choose
   - prompt a short rehearsal write-through of the cue-to-action link after a plan is saved, rather
     than routing the plan into a pinned reminder card [28]
   - add reminders tied to that plan, with an explanation of why the app is prompting, capped at
