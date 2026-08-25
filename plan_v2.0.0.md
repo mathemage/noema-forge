@@ -38,88 +38,204 @@ product rather than weakening it.
   by a licensed professional; Nevada AB 406, Utah HB 452, and New York's companion-bot law are
   adjacent [5]. This repository is public, so how it describes itself carries that exposure.
 
-The same literature is direct about what is appropriate: supportive journaling, reflection, and
-coaching are named as suitable lower-risk roles for language models [6]. That is precisely this
-product. v2 commits to it, and routes honestly to human help when severity warrants.
+Nothing in the literature endorses this product. The closest is a single hedged sentence in
+Stanford's write-up of Moore et al., which says it is "also possible that AI tools could be
+helpful for patients in less safety-critical scenarios, such as supporting journaling,
+reflection, or coaching" [6]. That is a plausible lower-risk role floated as worth studying, and
+it is framed around people already in care. Read it as permission to proceed carefully, not as
+evidence the product works.
 
 ## What the evidence changes
 
-Ten design rules, each traceable to a source. These are the reason v2 looks the way it does.
+Design rules, each traceable to a source. These are the reason v2 looks the way it does. Each
+rule states the strength of what is behind it, because several are weaker than the popular
+version of the same idea.
 
 1. **A blank "write your feelings" box is the weakest possible design.** Plain expressive writing
    reaches SMD -0.43 against waitlist and is barely distinguishable from writing about neutral
-   topics (-0.37). Enhanced writing -- directive instructions that change each session, plus
-   responsive feedback -- reaches -0.81, statistically indistinguishable from full psychotherapy
-   (-0.78) [7]. The superiority is not robust: it disappears when two-arm trials are removed, and
-   30 of 44 trials are at high risk of bias. Treat it as the best available direction, not a
-   settled result. Corroborated independently: directed questions roughly doubled the overall
-   effect (r = .090 vs .052) and produced an eightfold difference on psychological health
-   (r = .094 vs .011) [1].
-   => The core loop is a session-varying structured protocol with responsive feedback.
+   topics (-0.37). Enhanced writing -- therapist presence or feedback, directive instructions that
+   change each session, and more or longer sessions -- reaches -0.81 against waitlist, against
+   -0.78 for full psychotherapy [7]. Two caveats matter and were confirmed on audit: EW+ beat
+   plain expressive writing at end of treatment only, and at longest follow-up the review found
+   no significant differences between EW+, EW, and neutral writing; 30 of 44 trials are at high
+   risk of bias and confidence in most network estimates is low. Corroborated independently, and
+   more robustly: directed questions and specific examples of what to disclose roughly doubled
+   the overall effect (r = .090 vs .052) and produced an eightfold difference on psychological
+   health (r = .094 vs .011) [1].
+   => The core loop is a session-varying structured protocol with responsive feedback. Expect it
+   to help people write better, not to hold a therapy-sized effect at follow-up.
 
-2. **Depth beats frequency, and short sessions may be worse than none.** At least three sessions
-   of at least fifteen minutes; sessions under fifteen minutes were null-to-negative (r = -.007
-   overall, -.132 for reported health). Session spacing was not a significant moderator [1]. In
-   an N = 833 RCT, benefit appeared only for participants whose writing reached roughly 1,722
-   words [8]. These are moderator analyses, not randomised dose comparisons, so read them as
-   direction rather than as a validated threshold.
-   => Measure depth and completed sessions, not consecutive days.
+2. **Structure and guidance matter more than duration.** In the debrief literature, high-structure
+   protocols that specify exact questions and procedures averaged d = .69 against d = .32 where
+   structure was absent, and facilitated debriefs reached d = .75 against d = .25 unfacilitated
+   [17]. Both cells are thin -- the unfacilitated estimate rests on two samples -- but they point
+   the same way, and against a blank page with a saved template. Session length showed no
+   relationship to effect size (k = 17, r = .08, ns), with individual sessions averaging about
+   18 minutes.
+   => Build the app as an active guide that paces, follows up, and declines to accept a one-line
+   answer. Target roughly 15-20 minutes and stop.
 
-3. **Gamification is associated with worse retention.** Across 79 RCTs of depression and anxiety
+3. **Reflection needs a second source of information.** The 25% debrief improvement (d = .67
+   across 46 samples) cannot be claimed here at all: one of the four required elements is
+   multiple information sources, and the authors explicitly exclude "personal diary keeping" and
+   "self-reflection" from the construct [17].
+   => Rather than cite it, meet it. Engineer a second source into every session: a contrast with
+   the user's own prior entry, an imported objective record, or the assist layer acting as the
+   outside perspective. This is the single clearest structural gap between a journal and a debrief.
+
+4. **Make the user explain before the model does.** Prompting people to generate their own
+   explanation produced g = .55 (95% CI .45 to .65) across 69 effect sizes and 5,917 participants,
+   and beat handing them a ready-made explanation of the same material (g = .35 favouring
+   self-explanation) [18]. Prompts asking people to explain the substance worked (g = .873);
+   prompts asking them to rate their own planning or understanding did not (g = .192, CI crosses
+   zero), and multiple-choice self-explanation was null.
+   => Withhold every model-written interpretation until the user has committed their own. Ask
+   about the substance of what happened, never for a self-rating, and never offer a pick-a-reason
+   widget in place of free text.
+
+5. **Depth beats frequency, but the dosage thresholds are softer than they look.** Sessions under
+   fifteen minutes were null-to-negative (r = -.007 overall, -.132 for reported health), and three
+   or more sessions outperformed fewer. On audit, though, the session-count moderator was only
+   marginal (p one-tailed = .098) and session length was significant for the overall effect
+   (p = .03) and reported health (p = .018) but **not** for psychological health (p = .30), which
+   is the outcome family this product cares about [1]. The widely-cited ~1,722-word threshold is
+   post hoc: word count was measured, not manipulated, and the authors warn that verbal fluency
+   rather than engagement may be doing the work [8].
+   => Use fifteen minutes as a default session shape, not a gate, and do not tell users a word
+   count is required.
+
+6. **Gamification is associated with worse retention.** Across 79 RCTs of depression and anxiety
    apps, attrition was lower when the app had no gamification features and when it provided
    reminders and human contact [9]. Extrinsic rewards can undermine intrinsic motivation for a
    task the user already finds worthwhile, and accountability framed around outcomes rather than
-   process produces both lower adherence and greater distress [10].
-   => No streaks, no points, no badges. Reminders and process framing instead.
+   process produces both lower adherence and greater distress [10]. In habit-formation data, a
+   single missed day did not derail acquisition: automaticity fell 0.29 points and the rebound on
+   resuming was indistinguishable from an ordinary day's gain [20].
+   => No streaks, no points, no badges, and never a failure state after one missed day.
 
-4. **Capture modality does not affect outcomes; privacy does.** Handwriting, typing, and talking
-   showed no significant difference on any outcome [1], and typed writing matched handwritten in
-   the positive-writing literature [11]. But writing at home returned r = .122 against r = .034
-   in a controlled setting, and a private room .085 against .034 in a public one [1].
+7. **Reminders help, slightly.** In an 89-day micro-randomised trial of 1,255 users, a
+   contextually tailored notification raised the chance of a self-monitoring entry within 24 hours
+   by 3.9% relative (RR 1.039, 95% CI 1.01-1.08) [21]. The effect concentrated on weekends and did
+   not decay over twelve weeks. The trial capped sends at one per day and backed off as idle days
+   accumulated.
+   => Ship reminders, cap at one a day, back off automatically when the user goes quiet, and size
+   expectations at single-digit percentage lift rather than treating notifications as the
+   retention strategy.
+
+8. **Private articulation is enough; sharing adds nothing.** In three studies, reflection followed
+   by explaining insights to another person was never significantly better than private reflection
+   [27]. Separately, whether writing was private or done in another's presence did not moderate
+   the pronoun-depression association [23].
+   => Build for a solo writer. Skip audience, publishing, and social features entirely. Note this
+   sits in mild tension with rule 9's privacy finding; the honest reading is that privacy is worth
+   protecting for its own sake and possibly for efficacy, but the evidence is not one-directional.
+
+9. **Capture modality does not affect outcomes.** Handwriting, typing, and talking showed no
+   significant difference on any outcome [1], and typed matched handwritten in the positive-writing
+   literature [11]. Writing at home returned r = .122 against r = .034 in a controlled setting [1].
    => v1's multimodal capture is complete as a friction feature; do not expect more from it.
-   Privacy work is an efficacy investment, not only an ethical one.
 
-5. **Severity determines whether self-guided help is enough.** Below PHQ-9 9 there is little or no
-   difference between guided and unguided iCBT; above it, guidance matters progressively more
-   [3]. Chatbot benefit for depression is g = 0.64 in clinical samples, 0.34 in sub-clinical, and
-   0.07 with a confidence interval crossing zero in non-clinical samples [12].
-   => Periodic PHQ-9 and GAD-7, with an honest routing message above threshold.
+10. **Behavioural activation before cognitive challenge.** Pooled across 25 trials and 1,088
+    participants, behavioural activation reached g = -0.74 (95% CI -0.91 to -0.56, NNT 2.5) post
+    treatment, halving to -0.35 at 6-9 months [22]. Adding functional analysis and values
+    clarification did not improve on the two basic elements: simple BA (self-monitoring plus
+    activity scheduling) performed the same as complex BA. Dose showed no relationship to outcome
+    across a median of eight sessions.
+    => Ship a fixed, finishable eight-session activation course built from two fields -- what you
+    did and how you felt, then what you will schedule next -- and do not add components to it.
 
-6. **Showing someone their scores is inert.** In this review of routine outcome monitoring,
-   feedback paired with clinical support tools reaches d = 0.36 for off-track cases, an
-   expected-response trajectory reaches d = 0.12, and displaying raw scores reaches d = 0.04
-   [13]. Severe presentations react aversively to negative feedback when support tools are
-   absent.
-   => Never ship a bare mood chart. Pair every trend with an expected trajectory and a structured
-   off-track check-in covering social support, motivation, life events, and safety.
+11. **Socratic questioning is not for everyone, and its payoff is immediate rather than delayed.**
+    In a 16-week open trial of 126 depressed adults, therapist Socratic questioning did **not**
+    predict next-session depression severity; the entire effect ran through immediate,
+    within-session cognitive change, while sustained between-session change was not a significant
+    mediator [19]. Trait reactance moderated it opposite to the pre-registered hypothesis:
+    questioning helped only low-reactance clients (about 39% of the sample) and was unrelated,
+    with a positive point estimate, for the rest. Users low in baseline behavioural skills got
+    nothing from it.
+    => Measure the in-session cognitive shift, not next-week mood. Sequence activation before
+    challenge. Offer a non-interrogative path for users the questioning mode does not suit.
 
-7. **Sentiment tracking would point the wrong way.** Absolutist word use rises monotonically with
-   severity (control 0.97%, anxiety and depression 1.45%, suicidal ideation 1.80%), while
-   negative-emotion dictionaries were *lower* in the suicidal-ideation group than in anxiety and
-   depression [14]. A sentiment trend would have ranked the highest-risk group as least
-   distressed. These are between-group effects with no within-person analysis, so scoring an
-   individual over time is an untested extrapolation. Separately, per-label emotion detection in
-   therapy transcripts reaches only F1-macro 0.45, though aggregated features predict severity at
-   r = .50 [15].
-   => No sentiment tracking, no risk score from word counts, no per-entry emotion label presented
-   as fact. Mirror all-or-nothing language back as a restructuring prompt instead.
+12. **Severity determines whether self-guided help is enough.** Below PHQ-9 9 there is little or no
+    difference between guided and unguided iCBT; above it, guidance matters progressively more
+    [3]. Chatbot benefit for depression is g = 0.64 in clinical samples, 0.34 in sub-clinical, and
+    0.07 with a confidence interval crossing zero in non-clinical samples [12].
+    => Periodic PHQ-9 and GAD-7, with an honest routing message above threshold.
 
-8. **Crisis handling must be hard-coded.** Against an escalating C-SSRS-based prompt sequence,
-   zero of 29 mental-health chatbot agents met adequate-response criteria; only 10.34% offered a
-   correct region-appropriate emergency number unprompted; 20.69% gave inconsistent or
-   inappropriate responses, including answering "I think I will do it" with "It's great to see
-   that you're determined!"; and only 17.24% ever stated they were not equipped to handle a
-   crisis [16]. Crude keyword blocking is itself documented as harmful, because guardrails that
-   refuse to let a message be sent disrupt the user's sense of emotional sanctuary.
-   => Locale-configured hard-coded resources, an explicit not-equipped statement, and no
-   censorship of what the user may write in their own journal.
+13. **Showing someone their scores is inert.** In routine outcome monitoring, feedback paired with
+    clinical support tools reaches d = 0.36 for off-track cases, an expected-response trajectory
+    d = 0.12, and raw scores d = 0.04 [13]. Severe presentations react aversively to negative
+    feedback when support tools are absent. On audit: these effects are for data fed back to a
+    **therapist** inside ongoing psychotherapy and are additive to therapy's own effect, so
+    applying them to a solo app is an extension the source does not test.
+    => Never ship a bare mood chart. Pair every trend with an expected trajectory and a structured
+    off-track check-in covering social support, motivation, life events, and safety.
 
-9. **Sycophancy is the AI layer's characteristic failure.** Agreeable models reinforce
-   confirmation bias and cognitive distortions and avoid necessary challenge, where trained
-   providers deliberately alternate support and challenge [4].
-   => The assist layer's job is to challenge. Disconfirmation is a required output.
+14. **Text analytics cannot say anything about one person.** First-person singular pronoun use
+    correlates with depression at r = .130 (95% CI .098-.162, 21 studies, N = 3,758) -- about 1.7%
+    of shared variance -- and whether reducing it helps is explicitly untested [23]. In a
+    resampling analysis of 65,896 users, no language feature reached significance for personality
+    at a sample of 150 users, however much text each contributed [24]; a solo journal is n = 1.
+    Function words stay reliable in short texts while emotion words do not: 500 random words
+    contained 56 pronouns but only 11 negative-emotion words. Dictionary counting misses negation
+    and irony, with 21% of false positives from negation alone.
+    => Ship no inferred score, trait profile, or percentile. Any word-level feature must be shown
+    as highlighted matches in the user's own text that they can see and dismiss, never as a number
+    about them.
 
-10. **The language model is not the active ingredient.** Generative-AI chatbots did not outperform
+15. **Sentiment in particular would mislead.** Absolutist word use rises monotonically with
+    severity (control 0.97%, anxiety and depression 1.45%, suicidal ideation 1.80%) [14]. The
+    popular framing that sentiment tracks the wrong way overstates it, and the audit corrected
+    this: only "negative emotion" was significantly lower in suicidal-ideation than anxiety forums
+    (d = 1.05) and it was indistinguishable from depression forums (d = 0.05, ns), while "sad" ran
+    significantly *higher* in suicidal ideation (d = 1.78), and negative-emotion words were still
+    far above controls (d = 3.56). These remain between-forum, group-level effects with no
+    within-person analysis. In the one study often cited for automated emotion labelling, the
+    F1-macro of 0.45 was measured on translated Reddit comments, not on the therapy transcripts
+    the model was then applied to unvalidated [15]; negative sentiment alone predicted symptom
+    severity at r = .08.
+    => No sentiment tracking and no risk score from word counts. Surfacing all-or-nothing language
+    back to the writer as a restructuring prompt is defensible only as a transparent mirror of
+    their own words, never as a measurement.
+
+16. **Rumination and reflection differ by framing, and the difference is specified.** In 1,130
+    community adults measured a year apart, brooding predicted higher later depression
+    (beta = 0.158) while reflection predicted lower (beta = -0.059, which the authors warn may be
+    a suppression artifact); brooding correlates with depression at r = .44 against reflection's
+    r = .12 [25]. Critically, the item "Write down what you are thinking and analyze it" loads on
+    the *adaptive* reflection factor. The brooding factor is defined by grievance and social
+    comparison: "What am I doing to deserve this?", "Why do I have problems other people don't
+    have?", "Why can't I handle things better?"
+    => Frame prompts analytically ("analyse", "understand why this happened") and keep grievance
+    and social-comparison framings out of prompt copy entirely. This is the concrete mechanism
+    behind the reflection-versus-rumination distinction.
+
+17. **Distanced self-talk has a specific, testable form.** Writing about a current worry using
+    one's own name and non-first-person pronouns raised challenge-over-threat appraisal
+    (partial eta-squared = .112) in the only fully self-administered written study (N = 117) [26].
+    It was only ever tested joined to a causal "why did [name] feel this way" question, never as
+    detached observation. It did not reduce anticipatory anxiety (partial eta-squared = .001);
+    the effect is on post-event recovery and reduced replaying. Trait social anxiety did not
+    moderate it. Under unsupervised online delivery about a quarter of participants failed the
+    compliance check, by writing about a past event or not using the assigned pronoun form.
+    => Offer the mode to everyone, keep the why-question attached, frame it as recovery rather
+    than calm, and validate the entry before saving it.
+
+18. **Sycophancy is the AI layer's characteristic failure.** Agreeable models reinforce
+    confirmation bias and cognitive distortions and avoid necessary challenge, where trained
+    providers deliberately alternate support and challenge [4].
+    => The assist layer's job is to challenge, after the user has explained themselves first.
+
+19. **Crisis handling must be hard-coded.** Against an escalating C-SSRS-based prompt sequence,
+    zero of 29 mental-health chatbot agents met adequate-response criteria; only 10.34% offered a
+    correct region-appropriate emergency number unprompted; 20.69% gave inconsistent or
+    inappropriate responses, including answering "I think I will do it" with "It's great to see
+    that you're determined!"; and only 17.24% ever stated they were not equipped to handle a
+    crisis [16]. A separate qualitative study, cited by that paper, found that guardrails blocking
+    messages disrupted some users' sense of emotional sanctuary and caused additional distress.
+    => Locale-configured hard-coded resources, an explicit not-equipped statement, and no
+    censorship of what the user may write in their own journal.
+
+20. **The language model is not the active ingredient.** Generative-AI chatbots did not outperform
     retrieval or rule-based ones, and the generative-AI subgroup effect was not significant on its
     own (8 of 39 trials) [12].
     => The scripted protocol is primary and must work completely with Ollama absent.
@@ -131,24 +247,26 @@ Ten design rules, each traceable to a source. These are the reason v2 looks the 
 - Best Possible Self as a core feature: one study found the neutral writing control improved
   subjective wellbeing more than the intervention did [11].
 - Three Good Things, resource diaries, and satisfaction-processes writing: a single study each
-  [11].
-- Gratitude and Best Possible Self were the most consistent of the seven techniques reviewed, so
-  they may ship later as an optional wellbeing module labelled as affect boosters, never as
-  symptom treatment. The whole positive-writing base is 51 studies all rated poor or fair, with
-  only 7 using intention-to-treat analysis [11].
+  [11]. The whole positive-writing base is 51 studies all rated poor or fair, with only 7 using
+  intention-to-treat, and it is a narrative review with no meta-analysis or dose-response model.
+- Coaching users to write fewer "I" words. The correlation is r = .13 and the causal direction is
+  explicitly untested; gaming the metric would corrupt any later measurement [23].
+- Self-rated "how much did this help" sliders as an evaluation metric. In the debrief literature,
+  subjectively rated criteria averaged d = 1.07 against d = 0.58 for objective ones -- that choice
+  alone nearly doubles an apparent effect [17].
 
 ### Harms to design against
 
 - **Trauma-disclosure prompting without support.** Expressive writing increased illness-related
   doctor visits in a PTSD sample and produced null effects in former psychiatric patients, people
-  with negative body image, and people with suicidal tendencies [1]; researchers have cautioned
-  explicitly against unsupervised home-based application [11]. v2 never prompts trauma disclosure
-  by default.
+  with negative body image, and people with suicidal tendencies [1]. A caution against
+  unsupervised home-based application is often quoted [11], but it traces to a single 2002 study
+  and sits in direct tension with [1], where home disclosure outperformed lab settings and topic
+  valence did not significantly moderate any outcome. The conservative reading stands: v2 never
+  prompts trauma disclosure by default.
 - **Misreading the post-writing dip.** A short-term negative-affect spike is reliable and coexists
   with eventual benefit [8]. It must never be auto-interpreted as deterioration.
-- **Rumination amplification.** Elaborating at length on why something happened, without moving
-  anywhere, is the failure mode journaling is most prone to. Reflection has to travel: what
-  happened, why it might have happened, what it means, what can be learned, what will be done.
+- **Rumination amplification.** See rule 16 for the concrete framings to avoid.
 - **Dependency.** The APA flags that users in low-income or care-scarce contexts carry
   higher-than-average dependency risk precisely because the tool becomes their primary support,
   and advises limiting AI memory, reducing anthropomorphic features, and adding break nudges [4].
@@ -159,22 +277,24 @@ does not. Every assist call is stateless and receives only the slice the user ch
 
 ## Evidence status
 
-The claims above were extracted from primary sources by automated research agents and then
-audited adversarially against those sources. The audit completed for references [1]-[3], [21],
-and [22] before hitting a service limit; 18 of 25 audited claims were confirmed unchanged, and 7
-required correction. Every correction was an overreaching interpretation rather than a wrong
-figure, with two exceptions: one sample-size pairing and one corrupted quotation, both fixed.
+All 125 claims underlying references [1]-[16] and [28]-[37] were extracted from primary sources by
+automated research agents and then audited adversarially against those sources: 95 confirmed
+unchanged, 28 overstated, 2 with a wrong figure. Every correction identified has been folded into
+the rules above, and the two numeric errors -- a study-count/sample-size pairing and a corrupted
+quotation -- are fixed.
 
-References [4]-[20] carry verbatim supporting quotes from their sources but have not been
-independently re-checked. Given that the completed audit found interpretive overreach in roughly
-a quarter of claims, treat the design rules as well-sourced direction rather than settled fact,
-and re-verify any figure before it appears in user-facing copy or a public claim about the
-product.
+The pattern is worth carrying forward: numbers survived audit far better than interpretations did.
+The recurring failure was a correct figure with an interpretive tail that reached past it, most
+often by generalising a therapist-delivered effect to unguided software. References [17]-[27]
+carry verbatim source quotes and per-claim evidence grading; their adversarial verification pass
+was interrupted, so treat the rules citing them as well-sourced but not double-checked.
 
-Two known limits inherited from the sources themselves: the CBT component and homework-compliance
-literature is drawn entirely from therapist-delivered, face-to-face trials, so applying it to
-unguided software is an extension the evidence does not test; and the iCBT dose figures are the
-average protocol studied, not an established minimum effective dose.
+Three limits are inherited from the sources themselves and cannot be designed away. The CBT
+component, homework-compliance, routine-outcome-monitoring, and safety-planning literatures are
+drawn from therapist-delivered care, so every application here is an extension. The iCBT dose
+figures are the average protocol studied, not an established minimum. And the debrief
+meta-analysis explicitly excludes solitary journaling from its construct, which is why rule 3
+treats it as a design target rather than a citation.
 
 ## Proposed approach
 
@@ -209,7 +329,7 @@ Keep `README.md` and `PHILOSOPHY.md` aligned with this plan when scope or positi
 
 ## Roadmap
 
-Ten items in three waves, ordered by dependency. Use the shared PR template and Copilot prompt in
+Eleven items in three waves, ordered by dependency. Use the shared PR template and Copilot prompt in
 the final section for every item.
 
 ### Wave 1 - Foundation
@@ -229,7 +349,7 @@ Nothing else in v2 can be built until reflection is queryable and the safety lay
   - record the features the evidence says not to build, and the verification status of each source
   - point `README.md` at the current roadmap and add the non-therapist positioning line
 - **Success criteria:**
-  - the repository has a v2 roadmap with no more than ten implementation items
+  - the repository has a v2 roadmap with a bounded set of implementation items
   - every design rule cites a source, and unverified sources are marked as such
   - the v1 roadmap is preserved rather than overwritten
   - `README.md` states plainly that the app is not therapy and does not diagnose
@@ -294,7 +414,12 @@ Nothing else in v2 can be built until reflection is queryable and the safety lay
 
 ### Wave 2 - The reflection engine
 
-The core loop, the challenge layer, and the two specialised session types.
+The core loop, the challenge layer, and the specialised session types.
+
+Build item 11 first. Socratic-style challenge -- which is what item 4's Explore move is -- did
+nothing for users low in baseline behavioural skills, and behavioural activation carries better
+evidence than cognitive restructuring alone as a starting protocol (rules 10 and 11). Item
+numbering is kept stable because the GitHub issues reference it; only the build order differs.
 
 ### Roadmap item 4
 
@@ -407,6 +532,33 @@ The core loop, the challenge layer, and the two specialised session types.
   - suggesting principles on the user's behalf
   - sharing or exporting principles as a template library
 
+### Roadmap item 11
+
+- **Title:** `feat(activation): Add the eight-session behavioural activation course`
+- **Branch:** `feat/behavioural-activation`
+- **Goal:** give the user a finishable, low-demand protocol that works before they are ready to
+  argue with their own thoughts
+- **Why:** behavioural activation reached g = -0.74 post treatment across 25 trials, adding
+  functional analysis and values clarification did not improve on the two basic elements, and
+  Socratic-style questioning produced no benefit for users low in baseline behavioural skills;
+  activation is the right first protocol and the right prerequisite for item 4
+- **Key changes:**
+  - add a fixed eight-session course built from two fields: what you did and how you felt, then
+    what you will schedule next
+  - keep the course finishable and bounded rather than open-ended, and do not add components to it
+  - schedule a follow-up check at six and nine months after completion
+  - surface the course as the default starting protocol for a new user
+- **Success criteria:**
+  - a user can complete the whole course and see that it is finished
+  - the protocol stays at two fields; values clarification and functional analysis are not added
+  - the course works with no language model configured
+  - scheduled activities and their outcomes are queryable alongside every other session type
+  - the course has unit and end-to-end coverage
+- **Out of scope:**
+  - values clarification and functional analysis screens
+  - longer or premium course variants, which the dose data does not support
+  - importing activity data from external services
+
 ### Wave 3 - Continuity and durability
 
 What makes the archive worth having, and what keeps the practice alive.
@@ -450,14 +602,14 @@ What makes the archive worth having, and what keeps the practice alive.
 - **Key changes:**
   - add an if-then plan composer using the published `And if <situation>, then I will <action>!`
     frame as two bound fields, rejecting plans whose cue is only a date word or whose action names
-    only an outcome, since imprecise plans confer no advantage over a bare intention [17]
+    only an outcome, since imprecise plans confer no advantage over a bare intention [28]
   - prompt a short rehearsal write-through of the cue-to-action link after a plan is saved, rather
-    than routing the plan into a pinned reminder card [17]
+    than routing the plan into a pinned reminder card [28]
   - add reminders tied to that plan, with an explanation of why the app is prompting
   - frame all progress around completed sessions and closes, never around mood improving
   - track lapses without penalty, offer a shorter re-entry session after a gap, and offer plan
     revision after repeated failure rather than surfacing an adherence score
-  - measure nonusage separately from account retention [18]
+  - measure nonusage separately from account retention [29]
 - **Success criteria:**
   - the app ships no streak, point, badge, or loss-framed mechanic
   - a plan cannot be saved with a vague cue or an outcome-only action
@@ -477,10 +629,10 @@ What makes the archive worth having, and what keeps the practice alive.
   honest in
 - **Why:** writing privately measurably outperforms writing under observation, so privacy is part
   of how the product works; and in the reviewed consumer mental-health category, 23 of 27 apps
-  earned a privacy warning label [19]
+  earned a privacy warning label [30]
 - **Key changes:**
   - meet the published minimum security baseline: encryption in transit and at rest, enforced
-    password strength, a documented vulnerability-reporting contact, and a real privacy policy [19]
+    password strength, a documented vulnerability-reporting contact, and a real privacy policy [30]
   - add full export of every entry, session, principle, and decision in plain text and JSON
   - add account and data deletion that actually removes stored content
   - keep the default assist path local-first and document exactly what leaves the machine when
@@ -498,58 +650,96 @@ What makes the archive worth having, and what keeps the practice alive.
 
 ## References
 
-Audited entries were re-checked against the source by an adversarial verification pass; see
-"Evidence status" above.
+Entries marked "audited" were re-checked against the source by an adversarial verification pass;
+see "Evidence status" above.
 
 1. Frattaroli (2006), *Experimental Disclosure and Its Moderators: A Meta-Analysis*, Psychological
-   Bulletin. https://bpb-us-e2.wpmucdn.com/faculty.sites.uci.edu/dist/c/602/files/2019/08/Frattaroli-psych-bulletin-2006.pdf
-2. *What is the evidence for the efficacy of self-help acceptance and commitment therapy?* (audited)
-   https://www.sciencedirect.com/science/article/abs/pii/S2212144717300753
+   Bulletin (audited). https://bpb-us-e2.wpmucdn.com/faculty.sites.uci.edu/dist/c/602/files/2019/08/Frattaroli-psych-bulletin-2006.pdf
+2. *What is the evidence for the efficacy of self-help acceptance and commitment therapy?*
+   (audited). https://www.sciencedirect.com/science/article/abs/pii/S2212144717300753
 3. *Internet-Based Cognitive Behavioral Therapy for Depression: An IPD Network Meta-Analysis*
    (audited). 39 RCTs contributed IPD; 8,107 patients across 36 studies analysed.
    https://eprints.whiterose.ac.uk/id/eprint/168702/1/PSY20_2474R_Merged_PDF.pdf
 4. APA Health Advisory (Nov 2025), *Use of Generative AI Chatbots and Wellness Applications for
-   Mental Health*. https://www.apa.org/topics/artificial-intelligence-machine-learning/health-advisory-chatbots-wellness-apps
-5. DLA Piper (Aug 2025), *A legislative and enforcement outlook for mental health chatbots*.
-   https://www.dlapiper.com/en/insights/publications/2025/08/ai-mental-health-chatbots
-6. Stanford HAI / Moore et al. (2025), *New study warns of risks in AI mental health tools*.
+   Mental Health* (audited). https://www.apa.org/topics/artificial-intelligence-machine-learning/health-advisory-chatbots-wellness-apps
+5. DLA Piper (Aug 2025), *A legislative and enforcement outlook for mental health chatbots*
+   (audited). https://www.dlapiper.com/en/insights/publications/2025/08/ai-mental-health-chatbots
+6. Stanford HAI / Moore et al. (2025), *New study warns of risks in AI mental health tools*
+   (audited; the journaling endorsement is a single hedged sentence, see Positioning).
    https://news.stanford.edu/stories/2025/06/ai-mental-health-care-tools-dangers-risks
-7. *Expressive writing vs psychotherapy for PTSD: systematic review and network meta-analysis*.
-   https://pmc.ncbi.nlm.nih.gov/articles/PMC9772920/
-8. *Chasing elusive expressive writing effects: emotion-acceptance instructions* (N = 833 RCT).
-   https://pmc.ncbi.nlm.nih.gov/articles/PMC10300201/
+7. *Expressive writing vs psychotherapy for PTSD: systematic review and network meta-analysis*
+   (audited). https://pmc.ncbi.nlm.nih.gov/articles/PMC9772920/
+8. *Chasing elusive expressive writing effects: emotion-acceptance instructions* (N = 833 RCT;
+   audited). https://pmc.ncbi.nlm.nih.gov/articles/PMC10300201/
 9. *Uptake, Adherence, and Attrition in Clinical Trials of Depression and Anxiety Apps* (79 RCTs),
-   JAMA Psychiatry 2025. https://doi.org/10.1001/jamapsychiatry.2025.3439
+   JAMA Psychiatry 2025 (audited). https://doi.org/10.1001/jamapsychiatry.2025.3439
 10. Mohr et al., *Supportive Accountability: A Model for Providing Human Support to eHealth
-    Interventions*. https://pmc.ncbi.nlm.nih.gov/articles/PMC3221353/
-11. *Positive expressive writing interventions, subjective health and wellbeing* (51 studies).
-    https://pmc.ncbi.nlm.nih.gov/articles/PMC12094736/
+    Interventions* (audited). https://pmc.ncbi.nlm.nih.gov/articles/PMC3221353/
+11. *Positive expressive writing interventions, subjective health and wellbeing* (51 studies;
+    audited). https://pmc.ncbi.nlm.nih.gov/articles/PMC12094736/
 12. *Systematic review and meta-analysis of chatbots in the management of depressive and anxiety
-    symptoms* (39 RCTs). https://www.nature.com/articles/s41746-026-02566-w
-13. *Routine Outcome Monitoring and Feedback: Research Review and Recommendations*.
+    symptoms* (39 RCTs; audited). https://www.nature.com/articles/s41746-026-02566-w
+13. Barkham, De Jong, Delgadillo & Lutz, *Routine Outcome Monitoring and Feedback: Research Review
+    and Recommendations*, Psychotherapy Research 33(7):841-855 (audited).
     https://www.tandfonline.com/doi/full/10.1080/10503307.2023.2181114
-14. Al-Mosaiwi & Johnstone (2018), *In an Absolute State: Elevated Use of Absolutist Words*.
-    https://pmc.ncbi.nlm.nih.gov/articles/PMC6376956/
-15. *Employing large language models for emotion detection in psychotherapy transcripts*.
+14. Al-Mosaiwi & Johnstone (2018), *In an Absolute State: Elevated Use of Absolutist Words*
+    (audited). https://pmc.ncbi.nlm.nih.gov/articles/PMC6376956/
+15. *Employing large language models for emotion detection in psychotherapy transcripts* (audited;
+    the F1-macro figure is from GoEmotions, not the transcripts).
     https://pmc.ncbi.nlm.nih.gov/articles/PMC12098529/
 16. *Performance of mental health chatbot agents in detecting and managing suicidal ideation*
-    (29 agents), Scientific Reports 2025. https://www.nature.com/articles/s41598-025-17242-4
-17. Gollwitzer & Sheeran (2006), *Implementation Intentions and Goal Achievement: A Meta-Analysis
-    of Effects and Processes*. d = .65 (95% CI .60-.70) across 94 tests, N = 8,461, measured
-    against a goal intention alone rather than against no plan.
+    (29 agents), Scientific Reports 2025 (audited).
+    https://www.nature.com/articles/s41598-025-17242-4
+17. Tannenbaum & Cerasoli, *Do Team and Individual Debriefs Enhance Performance? A Meta-Analysis*
+    (46 samples, N = 2,136). Explicitly excludes solitary journaling from the construct.
+    https://cebma.org/assets/Uploads/Tannenbaum-Cerasoli.pdf
+18. Bisra et al. (2018), *Inducing Self-Explanation: A Meta-Analysis* (69 effect sizes,
+    N = 5,917). https://gwern.net/doc/psychology/spaced-repetition/2018-bisra.pdf
+19. *Socratic questioning, cognitive change and symptom change in cognitive therapy for
+    depression* (N = 126 open trial, Ohio State dissertation).
+    https://etd.ohiolink.edu/acprod/odb_etd/ws/send_file/send?accession=osu1536691280047438&disposition=inline
+20. Lally et al. (2010), *How are habits formed: Modelling habit formation in the real world*,
+    Eur J Soc Psychol. Median 66 days, range 18-254, model fitted for 48% of participants.
+    https://onlinelibrary.wiley.com/doi/abs/10.1002/ejsp.674
+21. *Micro-randomized trial of push notifications for self-monitoring* (1,255 users, 89 days).
+    https://pmc.ncbi.nlm.nih.gov/articles/PMC6293241/
+22. *Behavioural activation for depression: systematic review and meta-analysis* (25 trials,
+    N = 1,088), PLOS ONE. https://journals.plos.org/plosone/article?id=10.1371%2Fjournal.pone.0100100
+23. *First-person singular pronoun use and depression: a meta-analysis* (21 studies, N = 3,758).
+    https://osf.io/7sgzn/
+24. Eichstaedt et al., *Closed and Open Vocabulary Approaches to Text Analysis: A Primer*,
+    Psychological Methods. https://jeichstaedt.com/s/Eichstaedt-Intro-to-Text-analysis_psych-methods_sp.pdf
+25. Treynor, Gonzalez & Nolen-Hoeksema (2003), *Rumination Reconsidered: A Psychometric Analysis*
+    (N = 1,130, 1-year follow-up). https://websites.umich.edu/~gonzo/papers/treynor-rumination.pdf
+26. Kross et al. (2014), *Self-Talk as a Regulatory Mechanism: How You Do It Matters*, JPSP.
+    https://sites.lsa.umich.edu/emotion-selfcontrol-psych/wp-content/uploads/sites/1322/2024/07/KrossJ_Pers_Soc_Psychol2014Self-talk_as_a_regulatory_mechanism_How_you_do_it_matters.pdf
+27. Di Stefano, Gino, Pisano & Staats, *Learning by Thinking: How Reflection Can Spur Progress
+    Along the Learning Curve* (Wipro field experiment plus two lab studies).
+    https://larryferlazzo.edublogs.org/files/2013/08/reflection-1di0i76.pdf
+28. Gollwitzer & Sheeran (2006), *Implementation Intentions and Goal Achievement: A Meta-Analysis
+    of Effects and Processes*. d = .65 (95% CI .60-.70) across 94 tests, N = 8,461, against a goal
+    intention alone; d = .58 for self-nominated personal goals.
     https://kops.uni-konstanz.de/handle/123456789/10973
-18. Eysenbach (2005), *The Law of Attrition*, J Med Internet Res 7(1):e11.
-    https://www.jmir.org/2005/1/e11/
-19. Mozilla Foundation, *Privacy Not Included - Mental Health Apps*.
+29. Eysenbach (2005), *The Law of Attrition*, J Med Internet Res 7(1):e11 (audited; the 45x
+    completion gap compares two non-comparable cohorts). https://www.jmir.org/2005/1/e11/
+30. Mozilla Foundation, *Privacy Not Included - Mental Health Apps* (audited).
     https://www.mozillafoundation.org/en/privacynotincluded/categories/mental-health-apps/
-20. Sloan, Marx et al. (2018), *Written Exposure Therapy vs Cognitive Processing Therapy*, a
-    5-session writing protocol noninferior to 12-session CPT with 6.4% versus 39.7% dropout.
-    https://pmc.ncbi.nlm.nih.gov/articles/PMC5843538/
-21. Ciharova et al. (2021), *Cognitive restructuring, behavioral activation and cognitive-behavioral
+31. Sloan, Marx et al. (2018), *Written Exposure Therapy vs Cognitive Processing Therapy*
+    (audited). A 5-session therapist-delivered writing protocol noninferior to 12-session CPT,
+    with 6.4% versus 39.7% dropout. https://pmc.ncbi.nlm.nih.gov/articles/PMC5843538/
+32. Ciharova et al. (2021), *Cognitive restructuring, behavioral activation and cognitive-behavioral
     therapy for adult depression: a network meta-analysis* (audited), J Consult Clin Psychol
     89(6):563-574. https://pubmed.ncbi.nlm.nih.gov/34264703/
-22. *A Meta-Analysis of the Effects of Mental Contrasting With Implementation Intentions* (audited).
-    https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8149892/
+33. *A Meta-Analysis of the Effects of Mental Contrasting With Implementation Intentions*
+    (audited). https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8149892/
+34. *Safety Planning Intervention plus follow-up (SPI+) in emergency departments* (1,640 patients,
+    non-randomised cohort comparison). https://pmc.ncbi.nlm.nih.gov/articles/PMC6142908/
+35. Dippel et al. (2023), *Worry postponement: a meta-analysis* (8 samples, 7 RCTs, N = 999).
+    https://www.piekeren.com/wp-content/uploads/2024/03/Dippel.2023_Worry-postponement-meta-analysis.pdf
+36. Tausczik & Pennebaker (2010), *The Psychological Meaning of Words: LIWC and Computerized Text
+    Analysis Methods*. https://www.cs.cmu.edu/~ylataus/files/TausczikPennebaker2010.pdf
+37. *Quantity and Quality of Homework Compliance: A Meta-Analysis* (audited; therapist-delivered
+    CBT only). https://www.sciencedirect.com/science/article/abs/pii/S0005789416300296
 
 ## Recommended model per item
 
@@ -569,11 +759,12 @@ exposes none through max.
 | 8 Review and resurfacing | Opus 5 | high | GPT-5.6 Sol | high |
 | 9 Accountability | Sonnet | high | GPT-5.6 Terra | high |
 | 10 Privacy hardening | Opus 5 | xhigh | GPT-5.6 Sol | xhigh |
+| 11 Behavioural activation course | Sonnet | high | GPT-5.6 Terra | high |
 
-The two items dropped to the balanced tier, 7 and 9, are scoped and rule-driven once their
+Items 7, 9, and 11 sit at the balanced tier because they are scoped and rule-driven once their
 preceding items land. Items 2, 5, and 10 sit at xhigh because a silent mistake in a data
-migration, an anti-sycophancy prompt contract, or a deletion path is expensive and hard to
-detect after the fact.
+migration, an anti-sycophancy prompt contract, or a deletion path is expensive and hard to detect
+after the fact.
 
 ## Shared templates
 
