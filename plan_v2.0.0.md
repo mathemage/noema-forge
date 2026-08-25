@@ -293,9 +293,14 @@ quotation -- are fixed.
 
 The pattern is worth carrying forward: numbers survived audit far better than interpretations did.
 The recurring failure was a correct figure with an interpretive tail that reached past it, most
-often by generalising a therapist-delivered effect to unguided software. References [17]-[27]
-carry verbatim source quotes and per-claim evidence grading; their adversarial verification pass
-was interrupted, so treat the rules citing them as well-sourced but not double-checked.
+often by generalising a therapist-delivered effect to unguided software.
+
+The second round of research reproduced that pattern exactly. Of the decision-journal claims, 14
+of 18 were confirmed, 3 overstated and 1 carried a wrong figure; of the reflective-practice
+claims, 17 of 18 were confirmed. Those corrections are folded in above. References [20], [23],
+[24], [25], [26], [34] and [35] carry verbatim source quotes and per-claim evidence grading but
+their verification pass was interrupted, so treat the rules citing them as well-sourced and not
+yet double-checked.
 
 Three limits are inherited from the sources themselves and cannot be designed away. The CBT
 component, homework-compliance, routine-outcome-monitoring, and safety-planning literatures are
@@ -515,10 +520,14 @@ numbering is kept stable because the GitHub issues reference it; only the build 
   - record a predicted outcome with a confidence level and a review date
   - add a premortem prompt that asks the user to imagine the decision having gone badly and say
     why, as a timed two-minute freewrite for failure reasons followed by a separate two-minute
-    freewrite for fixes; a generic "critique this" prompt moved confidence no more than doing
-    nothing, so the failure frame is the active part [38]
-  - capture confidence at three fixed checkpoints rather than one, because confidence drops after
-    generating failure reasons and partly rebounds after generating fixes [38]
+    freewrite for fixes; the premortem produced the largest confidence drop (-25.0 on a 0-100
+    scale), though generating pros and cons (-14.0) and cons alone (-12.4) also moved confidence
+    significantly, and the authors credit two mechanisms working together rather than the failure
+    frame by itself [38]
+  - capture confidence at three fixed checkpoints rather than one; confidence fell sharply after
+    the failure freewrite and then rebounded past where it started (roughly 64 to 40 to 80 in the
+    source figure), so the closing number is an overshoot rather than a settled belief and must
+    never be scored as one [38]
   - resurface decisions on their review date to record the actual outcome against the prediction
   - add a calibration view comparing stated confidence against observed hit rate over time
   - gate the first prediction behind a one-time primer under an hour; comparable sub-hour training
@@ -535,7 +544,11 @@ numbering is kept stable because the GitHub issues reference it; only the build 
   - probability elicitation beyond a simple confidence level
   - importing decisions from outside the app
   - any claim that the app improves calibration; the premortem evidence measured self-reported
-    confidence only and never checked whether confidence tracked accuracy [38]
+    confidence only, never checked whether confidence tracked accuracy, and was delivered
+    face-to-face in facilitated groups of five to six [38]
+  - any claim that the forecasting primer is validated in a self-serve form; the training was
+    delivered through a research platform and the source says nothing about running it
+    unsupervised [39]
 
 ### Roadmap item 7
 
