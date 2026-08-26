@@ -8,6 +8,10 @@ type EntryUpdateRouteContext = {
   params: Promise<{ entryId: string }>;
 };
 
+function getField(formData: FormData, name: string) {
+  return String(formData.get(name) ?? "");
+}
+
 async function handlePost(
   request: NextAuthRequest,
   context: EntryUpdateRouteContext,
@@ -25,7 +29,10 @@ async function handlePost(
     await updateJournalEntry(
       entryId,
       {
-        body: String(formData.get("body") ?? ""),
+        feeling: getField(formData, "feeling"),
+        nextStep: getField(formData, "nextStep"),
+        rawBody: getField(formData, "body"),
+        rootIssue: getField(formData, "rootIssue"),
       },
       user.id,
     );
@@ -34,9 +41,9 @@ async function handlePost(
   } catch (error) {
     if (error instanceof JournalError) {
       const pathname =
-        error.code === "invalid-input"
-          ? `/entries/${entryId}/edit?error=${error.code}`
-          : "/?error=not-found";
+        error.code === "not-found"
+          ? "/?error=not-found"
+          : `/entries/${entryId}/edit?error=${error.code}`;
 
       return redirectToRequestOrigin(pathname);
     }

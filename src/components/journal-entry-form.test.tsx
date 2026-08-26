@@ -31,4 +31,24 @@ describe("JournalEntryForm", () => {
 
     expect(screen.getByLabelText("Entry")).toHaveValue("Second body");
   });
+
+  it("edits the stored reflection fields alongside the capture", () => {
+    render(
+      <JournalEntryForm
+        action="/entries/entry-1/update"
+        body="A raw capture"
+        description="Edit entry"
+        feeling="Tense"
+        heading="Edit entry"
+        nextStep="Write one sentence"
+        rootIssue="Unclear priority"
+        submitLabel="Save changes"
+      />,
+    );
+
+    expect(screen.getByLabelText("Entry")).toHaveValue("A raw capture");
+    expect(screen.getByLabelText("Feeling")).toHaveValue("Tense");
+    expect(screen.getByLabelText("Root issue")).toHaveValue("Unclear priority");
+    expect(screen.getByLabelText("Next step")).toHaveValue("Write one sentence");
+  });
 });

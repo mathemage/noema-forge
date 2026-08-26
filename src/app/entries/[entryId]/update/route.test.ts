@@ -24,84 +24,118 @@ vi.mock("@/lib/journal/service", () => ({
 
 import { POST } from "@/app/entries/[entryId]/update/route";
 import { getRequestUser } from "@/lib/auth/request";
-import { JournalError, updateJournalEntry } from "@/lib/journal/service";
+import {
+  JournalError,
+  updateJournalEntry,
+  type JournalEntryRecord,
+} from "@/lib/journal/service";
+
+function mockEntry(overrides: Partial<JournalEntryRecord> = {}): JournalEntryRecord {
+  return {
+    assistanceSource: null,
+    body: "Updated entry",
+    createdAt: new Date(),
+    feeling: null,
+    followUpQuestion: null,
+    id: "entry-1",
+    nextStep: null,
+    rawBody: "Updated entry",
+    rootIssue: null,
+    sessionId: "session-1",
+    source: "typed",
+    suggestions: [],
+    updatedAt: new Date(),
+    userId: "user-1",
+    ...overrides,
+  };
+}
+
+function signIn() {
+  vi.mocked(getRequestUser).mockResolvedValue({
+    createdAt: new Date(),
+    displayName: null,
+    email: "user@example.com",
+    id: "user-1",
+    updatedAt: new Date(),
+  });
+}
+
+async function post(formData: FormData) {
+  const response = await POST(
+    new NextRequest("http://127.0.0.1:3000/entries/entry-1/update", {
+      body: formData,
+      method: "POST",
+    }),
+    { params: Promise.resolve({ entryId: "entry-1" }) },
+  );
+
+  return {
+    location: new URL(
+      response.headers.get("location") ?? "",
+      "http://127.0.0.1:3000",
+    ),
+    status: response.status,
+  };
+}
 
 afterEach(() => {
   vi.clearAllMocks();
 });
 
 describe("POST /entries/[entryId]/update", () => {
-  it("updates an entry and redirects to the detail page", async () => {
-    vi.mocked(getRequestUser).mockResolvedValue({
-      createdAt: new Date(),
-      displayName: null,
-      email: "user@example.com",
-      id: "user-1",
-      updatedAt: new Date(),
-    });
-    vi.mocked(updateJournalEntry).mockResolvedValue({
-      body: "Updated entry",
-      createdAt: new Date(),
-      id: "entry-1",
-      source: "typed",
-      updatedAt: new Date(),
-      userId: "user-1",
-    });
+  it("updates the capture and its reflection, then redirects to the detail page", async () => {
+    signIn();
+    vi.mocked(updateJournalEntry).mockResolvedValue(mockEntry());
 
     const formData = new FormData();
     formData.set("body", "Updated entry");
+    formData.set("feeling", "Steadier");
+    formData.set("rootIssue", "");
+    formData.set("nextStep", "Send the email");
 
-    const response = await POST(
-      new NextRequest("http://127.0.0.1:3000/entries/entry-1/update", {
-        body: formData,
-        method: "POST",
-      }),
-      { params: Promise.resolve({ entryId: "entry-1" }) },
-    );
-    const location = new URL(
-      response.headers.get("location") ?? "",
-      "http://127.0.0.1:3000",
-    );
+    const { location, status } = await post(formData);
 
-    expect(response.status).toBe(303);
+    expect(status).toBe(303);
     expect(location.pathname).toBe("/entries/entry-1");
     expect(location.search).toBe("?message=updated");
     expect(updateJournalEntry).toHaveBeenCalledWith(
       "entry-1",
-      { body: "Updated entry" },
+      {
+        feeling: "Steadier",
+        nextStep: "Send the email",
+        rawBody: "Updated entry",
+        rootIssue: "",
+      },
       "user-1",
     );
   });
 
-  it("redirects back to edit when validation fails", async () => {
-    vi.mocked(getRequestUser).mockResolvedValue({
-      createdAt: new Date(),
-      displayName: null,
-      email: "user@example.com",
-      id: "user-1",
-      updatedAt: new Date(),
-    });
-    vi.mocked(updateJournalEntry).mockRejectedValue(
-      new JournalError("invalid-input"),
-    );
+  it.each(["entry-too-long", "invalid-input"])(
+    "redirects back to edit on a %s failure",
+    async (code) => {
+      signIn();
+      vi.mocked(updateJournalEntry).mockRejectedValue(new JournalError(code));
+
+      const formData = new FormData();
+      formData.set("body", "");
+
+      const { location } = await post(formData);
+
+      expect(location.pathname).toBe("/entries/entry-1/edit");
+      expect(location.search).toBe(`?error=${code}`);
+    },
+  );
+
+  it("sends a missing entry back to the journal", async () => {
+    signIn();
+    vi.mocked(updateJournalEntry).mockRejectedValue(new JournalError("not-found"));
 
     const formData = new FormData();
-    formData.set("body", "");
+    formData.set("body", "Updated entry");
 
-    const response = await POST(
-      new NextRequest("http://127.0.0.1:3000/entries/entry-1/update", {
-        body: formData,
-        method: "POST",
-      }),
-      { params: Promise.resolve({ entryId: "entry-1" }) },
-    );
-    const location = new URL(
-      response.headers.get("location") ?? "",
-      "http://127.0.0.1:3000",
-    );
+    const { location } = await post(formData);
 
-    expect(response.status).toBe(303);
-    expect(location.pathname).toBe("/entries/entry-1/edit");
-    expect(location.search).toBe("?error=invalid-input");
+    expect(location.pathname).toBe("/");
+    expect(location.search).toBe("?error=not-found");
   });
 });
