@@ -134,14 +134,19 @@ function findAssistanceHeading(text: string, from: number) {
 /**
  * The inverse of `composeJournalEntryBody()`. Returns `null` for any text this
  * function cannot reproduce exactly, so the caller keeps it as a raw capture.
+ *
+ * Entries that were posted back through an HTML form carry CRLF line endings,
+ * so both the parse and the check below run on LF-normalised text.
  */
 export function parseJournalEntryBody(text: string): GuidedReflectionInput | null {
-  if (!text.startsWith(RAW_CAPTURE_HEADING)) {
+  const normalized = text.replace(/\r\n/g, "\n");
+
+  if (!normalized.startsWith(RAW_CAPTURE_HEADING)) {
     return null;
   }
 
   const guidedIndex = findHeading(
-    text,
+    normalized,
     GUIDED_REFLECTION_HEADING,
     RAW_CAPTURE_HEADING.length,
   );
@@ -159,21 +164,21 @@ export function parseJournalEntryBody(text: string): GuidedReflectionInput | nul
   }
 
   for (const { heading, key } of MANUAL_HEADINGS) {
-    const index = findHeading(text, heading, cursor);
+    const index = findHeading(normalized, heading, cursor);
 
     if (index !== -1) {
       takeSection(key, heading, index);
     }
   }
 
-  const assistance = findAssistanceHeading(text, cursor);
+  const assistance = findAssistanceHeading(normalized, cursor);
 
   if (assistance) {
     takeSection("assistance", assistance.heading, assistance.index);
   }
 
   for (const { heading, key } of ASSISTANCE_OUTPUT_HEADINGS) {
-    const index = findHeading(text, heading, cursor);
+    const index = findHeading(normalized, heading, cursor);
 
     if (index !== -1) {
       takeSection(key, heading, index);
@@ -185,14 +190,17 @@ export function parseJournalEntryBody(text: string): GuidedReflectionInput | nul
   sections.forEach((section, position) => {
     values.set(
       section.key,
-      text.slice(section.valueIndex, sections[position + 1]?.headingIndex ?? text.length),
+      normalized.slice(
+        section.valueIndex,
+        sections[position + 1]?.headingIndex ?? normalized.length,
+      ),
     );
   });
 
   const suggestionsValue = values.get("suggestions");
   const parsed: GuidedReflectionInput = {
     assistanceSource: assistance?.source,
-    body: text.slice(RAW_CAPTURE_HEADING.length, guidedIndex),
+    body: normalized.slice(RAW_CAPTURE_HEADING.length, guidedIndex),
     feeling: values.get("feeling"),
     followUpQuestion: values.get("followUpQuestion"),
     nextStep: values.get("nextStep"),
@@ -202,5 +210,5 @@ export function parseJournalEntryBody(text: string): GuidedReflectionInput | nul
       : [],
   };
 
-  return composeJournalEntryBody(parsed) === text ? parsed : null;
+  return composeJournalEntryBody(parsed) === normalized ? parsed : null;
 }

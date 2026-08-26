@@ -7,12 +7,10 @@ import { readServerEnv, usesAuthJsCredentials } from "@/lib/env";
 import { excerptText } from "@/lib/formatting";
 import {
   JOURNAL_ENTRY_BODY_MAX_LENGTH,
+  JOURNAL_HISTORY_PAGE_SIZE,
   REFLECTION_FIELD_MAX_LENGTH,
 } from "@/lib/journal/limits";
-import {
-  JOURNAL_HISTORY_PAGE_SIZE,
-  listJournalEntries,
-} from "@/lib/journal/service";
+import { listJournalEntries } from "@/lib/journal/service";
 import { getSingleSearchParam } from "@/lib/search-params";
 
 type HomePageProps = {

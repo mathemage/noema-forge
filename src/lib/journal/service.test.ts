@@ -1,10 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 import type { Database } from "@/lib/db/client";
-import { REFLECTION_FIELD_MAX_LENGTH } from "@/lib/journal/limits";
+import {
+  JOURNAL_HISTORY_PAGE_SIZE,
+  REFLECTION_FIELD_MAX_LENGTH,
+} from "@/lib/journal/limits";
 import {
   createJournalEntry,
   getJournalEntry,
-  JOURNAL_HISTORY_PAGE_SIZE,
   JournalError,
   listJournalEntries,
   updateJournalEntry,

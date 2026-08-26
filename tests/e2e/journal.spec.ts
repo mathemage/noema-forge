@@ -35,6 +35,7 @@ test("desktop user can register, create, edit, search, sign out, and sign back i
   const feeling = "Focused but tense";
   const rootIssue = "The next action is vague";
   const nextStep = "Write the first sentence";
+  const revisedFeeling = "Steadier after naming it";
   const editableEntry = `Editable journal entry ${credentials.uniqueId}`;
   const updatedEntry = `${editableEntry} refined`;
 
@@ -85,6 +86,21 @@ test("desktop user can register, create, edit, search, sign out, and sign back i
     page.getByText("Name one concrete action that can be finished in 10 minutes."),
   ).toBeVisible();
   await expect(page.getByText("Typed", { exact: true })).toBeVisible();
+
+  await page.getByRole("link", { name: "Edit entry" }).click();
+  await expect(page).toHaveURL(/\/entries\/.+\/edit$/);
+  await expect(page.getByLabel("Entry", { exact: true })).toHaveValue(initialEntry);
+  await expect(page.getByLabel("Root issue")).toHaveValue(rootIssue);
+  await page.getByLabel("Feeling").fill(revisedFeeling);
+  await page.getByRole("button", { name: "Save changes" }).click();
+
+  await expect(page).toHaveURL(/\/entries\/.+\?message=updated$/);
+  await expect(page.getByText(revisedFeeling)).toBeVisible();
+  await expect(page.getByText(initialEntry)).toBeVisible();
+  await expect(page.getByText("Local guidance:")).toBeVisible();
+  await expect(
+    page.getByText("Name one concrete action that can be finished in 10 minutes."),
+  ).toBeVisible();
 
   await page.getByRole("link", { name: "Back to journal" }).click();
   await expect(page.getByRole("heading", { name: "Journal history" })).toBeVisible();

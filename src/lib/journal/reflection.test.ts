@@ -199,3 +199,81 @@ describe("guided reflection parsing", () => {
     });
   });
 });
+
+// Verbatim shapes taken from entries a v1 database actually holds. Text posted
+// back through an HTML form is stored with CRLF line endings.
+const V1_CRLF_ENTRY = [
+  "Raw capture:",
+  "I keep postponing the hard email.",
+  "",
+  "Guided reflection:",
+  "",
+  "Feeling:",
+  "Avoidant and tense",
+  "",
+  "Root issue:",
+  "I do not want to disappoint the recipient.",
+  "",
+  "Next step:",
+  "Draft the first three sentences.",
+  "",
+  "Local guidance:",
+  "",
+  "Follow-up question:",
+  "What would make the email safe enough to send?",
+  "",
+  "Suggestions:",
+  "- Open the thread.",
+  "- Write a bad first draft.",
+].join("\r\n");
+
+const V1_LF_ENTRY = [
+  "Raw capture:",
+  "Ran the retro today.",
+  "",
+  "Guided reflection:",
+  "",
+  "Next step:",
+  "Book the follow-up.",
+].join("\n");
+
+describe("v1 entry text", () => {
+  it("recovers an entry stored with CRLF line endings", () => {
+    expect(parseJournalEntryBody(V1_CRLF_ENTRY)).toEqual({
+      assistanceSource: "fallback",
+      body: "I keep postponing the hard email.",
+      feeling: "Avoidant and tense",
+      followUpQuestion: "What would make the email safe enough to send?",
+      nextStep: "Draft the first three sentences.",
+      rootIssue: "I do not want to disappoint the recipient.",
+      suggestions: ["Open the thread.", "Write a bad first draft."],
+    });
+  });
+
+  it("recovers an entry that filled only one reflection field", () => {
+    expect(parseJournalEntryBody(V1_LF_ENTRY)).toEqual({
+      assistanceSource: undefined,
+      body: "Ran the retro today.",
+      feeling: undefined,
+      followUpQuestion: undefined,
+      nextStep: "Book the follow-up.",
+      rootIssue: undefined,
+      suggestions: [],
+    });
+  });
+
+  it("recovers a multi-line capture whose own line endings are mixed", () => {
+    const parsed = parseJournalEntryBody(
+      "Raw capture:\nFirst line\r\nSecond line\n\nGuided reflection:\n\nFeeling:\nTense",
+    );
+
+    expect(parsed?.body).toBe("First line\nSecond line");
+    expect(parsed?.feeling).toBe("Tense");
+  });
+
+  it("keeps a plain multi-line capture as a raw entry", () => {
+    expect(
+      parseJournalEntryBody("Ran the retro today.\r\n\r\nIt went fine."),
+    ).toBeNull();
+  });
+});

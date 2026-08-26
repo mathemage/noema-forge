@@ -22,7 +22,7 @@ The app runs at `http://127.0.0.1:3000`. Open it to create a journal account or 
 
 `db:migrate` expects a fresh database or one already managed by that command. If a disposable local database was previously initialized with `db:push`, recreate it before migrating. Back up any data-bearing database instead of recreating it.
 
-Entries written before v2 keep their text in one `body` column. `db:migrate` copies that text into `raw_body` and leaves it there; `db:backfill-reflections` then reads the section headings back out into the reflection columns. It is a dry run unless you pass `-- --apply`, it never writes `body`, `source`, or either timestamp, and any entry whose text it cannot reproduce exactly stays a raw capture. Run it against a copy of your database first and diff the plan on stdout.
+Entries written before v2 keep their text in one `body` column. `db:migrate` copies that text into `raw_body` and leaves it there; `db:backfill-reflections` then reads the section headings back out into the reflection columns. It is a dry run unless you pass `-- --apply`, it never writes `body`, `source`, or either timestamp, and any entry whose text it cannot reproduce exactly, up to CRLF line endings, stays a raw capture. Run it against a copy of your database first and diff the plan on stdout.
 
 The sign-in page still loads without Postgres configured. The health route returns `503` until Postgres is reachable, and account creation, journal entry saves, edits, and search require `DATABASE_URL`.
 

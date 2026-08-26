@@ -2,7 +2,10 @@ import { randomUUID } from "node:crypto";
 import { and, desc, eq, gte, lt, sql } from "drizzle-orm";
 import { journalEntries, journalSessions } from "@/db/schema";
 import { getDatabase, type Database } from "@/lib/db/client";
-import { JOURNAL_ENTRY_BODY_MAX_LENGTH } from "@/lib/journal/limits";
+import {
+  JOURNAL_ENTRY_BODY_MAX_LENGTH,
+  JOURNAL_HISTORY_PAGE_SIZE,
+} from "@/lib/journal/limits";
 import {
   composeJournalEntryBody,
   type GuidedReflectionInput,
@@ -48,8 +51,6 @@ export type JournalHistoryPage = {
   hasNextPage: boolean;
   page: number;
 };
-
-export const JOURNAL_HISTORY_PAGE_SIZE = 25;
 
 const journalEntrySelect = {
   assistanceSource: journalEntries.assistanceSource,
