@@ -29,7 +29,8 @@
 6. After a release that adds reflection columns, fill them in from the existing entry text. Run the plan against a Neon branch cloned from Production first and read the diff, then apply it to Production:
 
    ```bash
-   vercel env run -e production -- npm run db:backfill-reflections > plan.ndjson
+   vercel env run -e preview --git-branch <branch-name> -- npm run db:backfill-reflections > plan.ndjson
+   # review plan.ndjson, then apply against Production
    vercel env run -e production -- npm run db:backfill-reflections -- --apply
    ```
 
