@@ -13,6 +13,7 @@ type EditEntryPageProps = {
 };
 
 const editErrorMessages: Record<string, string> = {
+  "entry-too-long": "Shorten the entry or reflection before saving your changes.",
   "invalid-input": "Write something before saving your changes.",
 };
 
@@ -52,12 +53,15 @@ export default async function EditEntryPage({
     >
       <JournalEntryForm
         action={`/entries/${entry.id}/update`}
-        body={entry.body}
+        body={entry.rawBody}
         cancelHref={`/entries/${entry.id}`}
-        description="Update the journal text while keeping the original capture source in the same searchable archive."
+        description="Update the capture and its reflection while keeping the original capture source in the same searchable archive."
         error={error ? editErrorMessages[error] : undefined}
+        feeling={entry.feeling ?? undefined}
         heading="Revise this entry"
         key={entry.id}
+        nextStep={entry.nextStep ?? undefined}
+        rootIssue={entry.rootIssue ?? undefined}
         submitLabel="Save changes"
       />
     </JournalChrome>

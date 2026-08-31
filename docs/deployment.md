@@ -26,14 +26,24 @@
 
    The first migration run expects a fresh Neon database. A database previously initialized with `db:push` has no Drizzle migration ledger and cannot be adopted automatically. Back it up and restore its data into a freshly migrated database, or have a PostgreSQL administrator review and baseline its migration history before using this command.
 
-6. Redeploy Production and verify health:
+6. After a release that adds reflection columns, fill them in from the existing entry text. Run the plan against a Neon branch cloned from Production first and read the diff, then apply it to Production:
+
+   ```bash
+   vercel env run -e preview --git-branch <branch-name> -- npm run db:backfill-reflections > plan.ndjson
+   # review plan.ndjson, then apply against Production
+   vercel env run -e production -- npm run db:backfill-reflections -- --apply
+   ```
+
+   The script never writes `body`, `source`, or either timestamp, and re-running it after `--apply` reports every row as already stored.
+
+7. Redeploy Production and verify health:
 
    ```bash
    vercel redeploy <current-production-url>
    vercel curl /api/health --deployment <new-production-url>
    ```
 
-7. Smoke-test registration, sign-in, typed capture, voice capture, OCR, reflection, save, search, edit, and sign-out on the HTTPS production domain. Check Vercel function logs for database or authentication errors:
+8. Smoke-test registration, sign-in, typed capture, voice capture, OCR, reflection, save, search, edit, and sign-out on the HTTPS production domain. Check Vercel function logs for database or authentication errors:
 
    ```bash
    vercel logs --environment production --level error --since 30m

@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   composeJournalEntryBody,
   hasGuidedReflection,
+  parseJournalEntryBody,
+  type GuidedReflectionInput,
 } from "@/lib/journal/reflection";
 
 describe("guided reflection composition", () => {
@@ -66,5 +68,212 @@ describe("guided reflection composition", () => {
         suggestions: ["Take one concrete step."],
       }),
     ).toBe(true);
+  });
+});
+
+const RAW_BODY = "I keep postponing the hard email.";
+const FIELD_VALUES = {
+  feeling: "Avoidant and tense",
+  followUpQuestion: "What would make the email safe enough to send?",
+  nextStep: "Draft the first three sentences.",
+  rootIssue: "I do not want to disappoint the recipient.",
+  suggestions: ["Open the thread.", "Write a bad first draft."],
+} as const;
+const OPTIONAL_FIELDS = [
+  "feeling",
+  "rootIssue",
+  "nextStep",
+  "followUpQuestion",
+  "suggestions",
+] as const;
+const ASSISTANCE_SOURCES = [undefined, "fallback", "ollama"] as const;
+
+type ReflectionCase = [string, GuidedReflectionInput, GuidedReflectionInput | null];
+
+function buildReflectionCases(): ReflectionCase[] {
+  const cases: ReflectionCase[] = [];
+
+  for (const assistanceSource of ASSISTANCE_SOURCES) {
+    for (let mask = 0; mask < 1 << OPTIONAL_FIELDS.length; mask += 1) {
+      const present = OPTIONAL_FIELDS.filter((_, index) => mask & (1 << index));
+      const input: GuidedReflectionInput = {
+        assistanceSource,
+        body: RAW_BODY,
+        feeling: present.includes("feeling") ? FIELD_VALUES.feeling : "",
+        followUpQuestion: present.includes("followUpQuestion")
+          ? FIELD_VALUES.followUpQuestion
+          : "",
+        nextStep: present.includes("nextStep") ? FIELD_VALUES.nextStep : "",
+        rootIssue: present.includes("rootIssue") ? FIELD_VALUES.rootIssue : "",
+        suggestions: present.includes("suggestions") ? [...FIELD_VALUES.suggestions] : [],
+      };
+      const hasAssistanceOutput =
+        present.includes("followUpQuestion") || present.includes("suggestions");
+
+      cases.push([
+        `${assistanceSource ?? "unlabelled"} assist with ${present.join(", ") || "no reflection fields"}`,
+        input,
+        present.length === 0
+          ? null
+          : {
+              assistanceSource: hasAssistanceOutput ? assistanceSource : undefined,
+              body: RAW_BODY,
+              feeling: input.feeling || undefined,
+              followUpQuestion: input.followUpQuestion || undefined,
+              nextStep: input.nextStep || undefined,
+              rootIssue: input.rootIssue || undefined,
+              suggestions: input.suggestions ?? [],
+            },
+      ]);
+    }
+  }
+
+  return cases;
+}
+
+describe("guided reflection parsing", () => {
+  it.each(buildReflectionCases())(
+    "recovers an entry saved with %s",
+    (_name, input, expected) => {
+      expect(parseJournalEntryBody(composeJournalEntryBody(input))).toEqual(expected);
+    },
+  );
+
+  it("treats a plain capture as a raw entry", () => {
+    expect(parseJournalEntryBody("Just a thought I typed.")).toBeNull();
+  });
+
+  it("keeps reflection headings that belong to the raw capture", () => {
+    const input = {
+      body: "Notes from the call\n\nFeeling:\nwhat I wrote on paper",
+      feeling: "Calm",
+    };
+    const parsed = parseJournalEntryBody(composeJournalEntryBody(input));
+
+    expect(parsed?.body).toBe(input.body);
+    expect(parsed?.feeling).toBe("Calm");
+  });
+
+  it("refuses to guess when a heading appears twice", () => {
+    const composed = composeJournalEntryBody({
+      body: "Pasted an old entry\n\nGuided reflection:\n\nFeeling:\nOld",
+      feeling: "New",
+    });
+
+    expect(parseJournalEntryBody(composed)).toBeNull();
+  });
+
+  it("refuses an entry whose suggestion list was hand-edited", () => {
+    const composed = composeJournalEntryBody({
+      body: RAW_BODY,
+      suggestions: ["Open the thread."],
+    });
+
+    expect(parseJournalEntryBody(composed.replace("- Open", "Open"))).toBeNull();
+  });
+
+  it("refuses text that a compose call could not have produced", () => {
+    expect(
+      parseJournalEntryBody(
+        "Raw capture:\nA thought\n\nGuided reflection:\n\nSomething else:\nvalue",
+      ),
+    ).toBeNull();
+  });
+
+  it("recovers assistance output that was saved without a source label", () => {
+    const composed = composeJournalEntryBody({
+      body: RAW_BODY,
+      followUpQuestion: "What matters now?",
+      suggestions: ["Choose one action."],
+    });
+
+    expect(composed).toContain("Reflection assist:");
+    expect(parseJournalEntryBody(composed)).toEqual({
+      assistanceSource: undefined,
+      body: RAW_BODY,
+      feeling: undefined,
+      followUpQuestion: "What matters now?",
+      nextStep: undefined,
+      rootIssue: undefined,
+      suggestions: ["Choose one action."],
+    });
+  });
+});
+
+// Verbatim shapes taken from entries a v1 database actually holds. Text posted
+// back through an HTML form is stored with CRLF line endings.
+const V1_CRLF_ENTRY = [
+  "Raw capture:",
+  "I keep postponing the hard email.",
+  "",
+  "Guided reflection:",
+  "",
+  "Feeling:",
+  "Avoidant and tense",
+  "",
+  "Root issue:",
+  "I do not want to disappoint the recipient.",
+  "",
+  "Next step:",
+  "Draft the first three sentences.",
+  "",
+  "Local guidance:",
+  "",
+  "Follow-up question:",
+  "What would make the email safe enough to send?",
+  "",
+  "Suggestions:",
+  "- Open the thread.",
+  "- Write a bad first draft.",
+].join("\r\n");
+
+const V1_LF_ENTRY = [
+  "Raw capture:",
+  "Ran the retro today.",
+  "",
+  "Guided reflection:",
+  "",
+  "Next step:",
+  "Book the follow-up.",
+].join("\n");
+
+describe("v1 entry text", () => {
+  it("recovers an entry stored with CRLF line endings", () => {
+    expect(parseJournalEntryBody(V1_CRLF_ENTRY)).toEqual({
+      assistanceSource: "fallback",
+      body: "I keep postponing the hard email.",
+      feeling: "Avoidant and tense",
+      followUpQuestion: "What would make the email safe enough to send?",
+      nextStep: "Draft the first three sentences.",
+      rootIssue: "I do not want to disappoint the recipient.",
+      suggestions: ["Open the thread.", "Write a bad first draft."],
+    });
+  });
+
+  it("recovers an entry that filled only one reflection field", () => {
+    expect(parseJournalEntryBody(V1_LF_ENTRY)).toEqual({
+      assistanceSource: undefined,
+      body: "Ran the retro today.",
+      feeling: undefined,
+      followUpQuestion: undefined,
+      nextStep: "Book the follow-up.",
+      rootIssue: undefined,
+      suggestions: [],
+    });
+  });
+
+  it("recovers a multi-line capture whose own line endings are mixed", () => {
+    const parsed = parseJournalEntryBody(
+      "Raw capture:\nFirst line\r\nSecond line\n\nGuided reflection:\n\nFeeling:\nTense",
+    );
+
+    expect(parsed?.body).toBe("First line\nSecond line");
+    expect(parsed?.feeling).toBe("Tense");
+  });
+
+  it("keeps a plain multi-line capture as a raw entry", () => {
+    expect(
+      parseJournalEntryBody("Ran the retro today.\r\n\r\nIt went fine."),
+    ).toBeNull();
   });
 });

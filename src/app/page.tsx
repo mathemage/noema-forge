@@ -7,6 +7,7 @@ import { readServerEnv, usesAuthJsCredentials } from "@/lib/env";
 import { excerptText } from "@/lib/formatting";
 import {
   JOURNAL_ENTRY_BODY_MAX_LENGTH,
+  JOURNAL_HISTORY_PAGE_SIZE,
   REFLECTION_FIELD_MAX_LENGTH,
 } from "@/lib/journal/limits";
 import { listJournalEntries } from "@/lib/journal/service";
@@ -15,9 +16,40 @@ import { getSingleSearchParam } from "@/lib/search-params";
 type HomePageProps = {
   searchParams: Promise<{
     error?: string | string[];
+    from?: string | string[];
+    page?: string | string[];
     q?: string | string[];
+    to?: string | string[];
   }>;
 };
+
+type HistoryFilters = {
+  from?: string;
+  query: string;
+  to?: string;
+};
+
+function buildHistoryHref(filters: HistoryFilters, page: number) {
+  const search = new URLSearchParams();
+
+  if (filters.query) {
+    search.set("q", filters.query);
+  }
+
+  if (filters.from) {
+    search.set("from", filters.from);
+  }
+
+  if (filters.to) {
+    search.set("to", filters.to);
+  }
+
+  if (page > 1) {
+    search.set("page", String(page));
+  }
+
+  return search.size ? `/?${search}` : "/";
+}
 
 const journalEntryBodyMaxLengthLabel =
   JOURNAL_ENTRY_BODY_MAX_LENGTH.toLocaleString("en-US");
@@ -29,6 +61,22 @@ const homeErrorMessages: Record<string, string> = {
   "not-found": "That entry is no longer available.",
 };
 
+function emptyHistoryMessage(filters: HistoryFilters, page: number) {
+  if (page > 1) {
+    return "This page is past the end of the archive.";
+  }
+
+  if (filters.query) {
+    return `No entries match "${filters.query}" yet.`;
+  }
+
+  if (filters.from || filters.to) {
+    return "No entries fall inside that date range yet.";
+  }
+
+  return "No entries yet. Save your first capture to start the archive.";
+}
+
 export default async function Home({ searchParams }: HomePageProps) {
   const user = await requireCurrentUser();
   const params = await searchParams;
@@ -36,9 +84,16 @@ export default async function Home({ searchParams }: HomePageProps) {
   const signOutAction = usesAuthJsCredentials(env)
     ? signOutWithAuthJsCredentials
     : "/auth/sign-out";
-  const query = getSingleSearchParam(params.q)?.trim() ?? "";
   const error = getSingleSearchParam(params.error);
-  const entries = await listJournalEntries({ query }, user.id);
+  const filters: HistoryFilters = {
+    from: getSingleSearchParam(params.from),
+    query: getSingleSearchParam(params.q)?.trim() ?? "",
+    to: getSingleSearchParam(params.to),
+  };
+  const { entries, hasNextPage, page } = await listJournalEntries(
+    { ...filters, page: getSingleSearchParam(params.page) },
+    user.id,
+  );
 
   return (
     <JournalChrome
@@ -66,25 +121,48 @@ export default async function Home({ searchParams }: HomePageProps) {
                 Search and browse
               </h2>
               <p className="max-w-lg text-sm leading-6 text-muted">
-                Your newest entries appear first. Search stays inside PostgreSQL.
+                Your newest entries appear first, {JOURNAL_HISTORY_PAGE_SIZE} to a
+                page. Search stays inside PostgreSQL.
               </p>
             </div>
 
-            <form className="flex w-full flex-col gap-3 sm:flex-row lg:max-w-md" method="get">
-              <input
-                aria-label="Search entry text"
-                className="journal-control w-full px-4 py-3 text-sm"
-                defaultValue={query}
-                name="q"
-                placeholder="Search entry text"
-                type="search"
-              />
-              <button
-                className="button-primary inline-flex items-center justify-center px-5 py-3 text-sm font-semibold"
-                type="submit"
-              >
-                Search
-              </button>
+            <form className="flex w-full flex-col gap-3 lg:max-w-md" method="get">
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <input
+                  aria-label="Search entry text"
+                  className="journal-control w-full px-4 py-3 text-sm"
+                  defaultValue={filters.query}
+                  name="q"
+                  placeholder="Search entry text"
+                  type="search"
+                />
+                <button
+                  className="button-primary inline-flex items-center justify-center px-5 py-3 text-sm font-semibold"
+                  type="submit"
+                >
+                  Search
+                </button>
+              </div>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <label className="w-full space-y-1 text-xs font-semibold text-muted">
+                  <span>From</span>
+                  <input
+                    className="journal-control w-full px-4 py-2.5 text-sm"
+                    defaultValue={filters.from ?? ""}
+                    name="from"
+                    type="date"
+                  />
+                </label>
+                <label className="w-full space-y-1 text-xs font-semibold text-muted">
+                  <span>To</span>
+                  <input
+                    className="journal-control w-full px-4 py-2.5 text-sm"
+                    defaultValue={filters.to ?? ""}
+                    name="to"
+                    type="date"
+                  />
+                </label>
+              </div>
             </form>
           </div>
 
@@ -92,11 +170,7 @@ export default async function Home({ searchParams }: HomePageProps) {
             {entries.length === 0 ? (
               <div className="inset-panel border-dashed px-5 py-8 text-sm leading-6 text-muted">
                 <p className="font-semibold text-foreground">The archive is quiet.</p>
-                <p className="mt-1">
-                  {query
-                    ? `No entries match "${query}" yet.`
-                    : "No entries yet. Save your first capture to start the archive."}
-                </p>
+                <p className="mt-1">{emptyHistoryMessage(filters, page)}</p>
               </div>
             ) : (
               entries.map((entry) => (
@@ -139,6 +213,33 @@ export default async function Home({ searchParams }: HomePageProps) {
               ))
             )}
           </div>
+
+          {entries.length > 0 || page > 1 ? (
+            <nav
+              aria-label="Journal history pages"
+              className="mt-6 flex flex-wrap items-center justify-between gap-3 text-sm"
+            >
+              <span className="text-muted">Page {page}</span>
+              <div className="flex flex-wrap gap-3">
+                {page > 1 ? (
+                  <a
+                    className="button-secondary inline-flex items-center justify-center px-4 py-2 font-semibold"
+                    href={buildHistoryHref(filters, page - 1)}
+                  >
+                    Previous entries
+                  </a>
+                ) : null}
+                {hasNextPage ? (
+                  <a
+                    className="button-secondary inline-flex items-center justify-center px-4 py-2 font-semibold"
+                    href={buildHistoryHref(filters, page + 1)}
+                  >
+                    Older entries
+                  </a>
+                ) : null}
+              </div>
+            </nav>
+          ) : null}
         </section>
       </div>
     </JournalChrome>

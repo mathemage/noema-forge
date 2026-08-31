@@ -15,6 +15,7 @@
     "test:unit:watch": "vitest",
     "test:e2e": "playwright test",
     "db:generate": "drizzle-kit generate",
+    "db:backfill-reflections": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/backfill-reflections.mts",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio"
