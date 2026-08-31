@@ -71,6 +71,10 @@ function columnsFor(entry: StoredEntry): ReflectionColumns | null {
   };
 }
 
+function sameSuggestions(a: string[], b: string[]) {
+  return a.length === b.length && a.every((value, index) => value === b[index]);
+}
+
 function alreadyStored(entry: StoredEntry, columns: ReflectionColumns) {
   return (
     entry.assistance_source === columns.assistance_source &&
@@ -79,7 +83,7 @@ function alreadyStored(entry: StoredEntry, columns: ReflectionColumns) {
     entry.next_step === columns.next_step &&
     entry.raw_body === columns.raw_body &&
     entry.root_issue === columns.root_issue &&
-    entry.suggestions.join("\n") === columns.suggestions.join("\n")
+    sameSuggestions(entry.suggestions, columns.suggestions)
   );
 }
 
