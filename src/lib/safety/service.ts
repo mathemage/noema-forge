@@ -93,6 +93,19 @@ export async function getSafetyProfile(
   return profile ?? null;
 }
 
+/**
+ * The limits statement gates the first session, so this is checked at every
+ * surface a session can start from, not only on the journal page.
+ */
+export async function hasAcknowledgedLimits(
+  userId: string,
+  db: Database = getDatabase(),
+) {
+  const profile = await getSafetyProfile(userId, db);
+
+  return Boolean(profile?.limitsAcknowledgedAt);
+}
+
 export async function acknowledgeLimits(
   userId: string,
   db: Database = getDatabase(),

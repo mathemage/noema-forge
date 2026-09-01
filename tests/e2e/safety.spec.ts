@@ -44,11 +44,20 @@ test("the limits statement comes before the first session and crisis resources f
   await page.goto("/");
   await expect(page).toHaveURL(/\/safety\/limits$/);
 
+  // Including at the write boundary, which no page navigation has to pass.
+  const blockedWrite = await page.request.post("/entries", {
+    form: { body: "Written before reading the limits", source: "typed" },
+    maxRedirects: 0,
+  });
+  expect(blockedWrite.status()).toBe(303);
+  expect(blockedWrite.headers().location).toBe("/safety/limits");
+
   await page.getByRole("button", { name: "I have read this" }).click();
   await expect(page.getByRole("heading", { name: "Journal history" })).toBeVisible();
 
   const notice = page.getByLabel("Safety and limits");
   await expect(notice).toBeVisible();
+  await expect(page.getByText("Written before reading the limits")).toHaveCount(0);
 
   await page.getByLabel("Entry", { exact: true }).fill(`Entry ${randomUUID()}`);
   await page.getByRole("button", { name: "Save entry" }).click();

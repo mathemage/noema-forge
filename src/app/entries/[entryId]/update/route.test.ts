@@ -22,8 +22,13 @@ vi.mock("@/lib/journal/service", () => ({
   updateJournalEntry: vi.fn(),
 }));
 
+vi.mock("@/lib/safety/service", () => ({
+  hasAcknowledgedLimits: vi.fn(),
+}));
+
 import { POST } from "@/app/entries/[entryId]/update/route";
 import { getRequestUser } from "@/lib/auth/request";
+import { hasAcknowledgedLimits } from "@/lib/safety/service";
 import {
   JournalError,
   updateJournalEntry,
@@ -50,7 +55,7 @@ function mockEntry(overrides: Partial<JournalEntryRecord> = {}): JournalEntryRec
   };
 }
 
-function signIn() {
+function signIn(acknowledgedLimits = true) {
   vi.mocked(getRequestUser).mockResolvedValue({
     createdAt: new Date(),
     displayName: null,
@@ -58,6 +63,7 @@ function signIn() {
     id: "user-1",
     updatedAt: new Date(),
   });
+  vi.mocked(hasAcknowledgedLimits).mockResolvedValue(acknowledgedLimits);
 }
 
 async function post(formData: FormData) {
@@ -83,6 +89,19 @@ afterEach(() => {
 });
 
 describe("POST /entries/[entryId]/update", () => {
+  it("sends a user who has not read the limits statement there before writing", async () => {
+    signIn(false);
+
+    const formData = new FormData();
+    formData.set("body", "Updated entry");
+
+    const { location, status } = await post(formData);
+
+    expect(status).toBe(303);
+    expect(location.pathname).toBe("/safety/limits");
+    expect(updateJournalEntry).not.toHaveBeenCalled();
+  });
+
   it("updates the capture and its reflection, then redirects to the detail page", async () => {
     signIn();
     vi.mocked(updateJournalEntry).mockResolvedValue(mockEntry());

@@ -3,6 +3,7 @@ import type { Database } from "@/lib/db/client";
 import {
   acknowledgeLimits,
   getLatestCheckIn,
+  hasAcknowledgedLimits,
   getSafetyPlan,
   getSafetyProfile,
   recordSeverityCheckIn,
@@ -52,6 +53,28 @@ describe("getSafetyProfile", () => {
     const { db } = mockSelectDb([]);
 
     await expect(getSafetyProfile("user-1", db)).resolves.toBeNull();
+  });
+});
+
+describe("hasAcknowledgedLimits", () => {
+  it("is false until the statement has been read", async () => {
+    await expect(
+      hasAcknowledgedLimits("user-1", mockSelectDb([]).db),
+    ).resolves.toBe(false);
+    await expect(
+      hasAcknowledgedLimits(
+        "user-1",
+        mockSelectDb([{ limitsAcknowledgedAt: null, userId: "user-1" }]).db,
+      ),
+    ).resolves.toBe(false);
+  });
+
+  it("is true once the acknowledgement is stored", async () => {
+    const { db } = mockSelectDb([
+      { limitsAcknowledgedAt: new Date(), userId: "user-1" },
+    ]);
+
+    await expect(hasAcknowledgedLimits("user-1", db)).resolves.toBe(true);
   });
 });
 

@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { getRequestUser } from "@/lib/auth/request";
 import { JournalError, updateJournalEntry } from "@/lib/journal/service";
 import { redirectToRequestOrigin } from "@/lib/request-url";
+import { hasAcknowledgedLimits } from "@/lib/safety/service";
 
 type EntryUpdateRouteContext = {
   params: Promise<{ entryId: string }>;
@@ -20,6 +21,11 @@ async function handlePost(
 
   if (!user) {
     return redirectToRequestOrigin("/sign-in");
+  }
+
+  // The gate belongs at the write boundary too, not only on the journal page.
+  if (!(await hasAcknowledgedLimits(user.id))) {
+    return redirectToRequestOrigin("/safety/limits");
   }
 
   const { entryId } = await context.params;

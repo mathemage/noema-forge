@@ -14,7 +14,7 @@ import {
 } from "@/lib/journal/limits";
 import { listJournalEntries } from "@/lib/journal/service";
 import { getSingleSearchParam } from "@/lib/search-params";
-import { getSafetyProfile } from "@/lib/safety/service";
+import { hasAcknowledgedLimits } from "@/lib/safety/service";
 
 type HomePageProps = {
   searchParams: Promise<{
@@ -82,10 +82,9 @@ function emptyHistoryMessage(filters: HistoryFilters, page: number) {
 
 export default async function Home({ searchParams }: HomePageProps) {
   const user = await requireCurrentUser();
-  const safetyProfile = await getSafetyProfile(user.id);
 
   // The limits statement comes before the first session, not after it.
-  if (!safetyProfile?.limitsAcknowledgedAt) {
+  if (!(await hasAcknowledgedLimits(user.id))) {
     redirect("/safety/limits");
   }
 
