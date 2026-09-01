@@ -52,6 +52,12 @@ test("the limits statement comes before the first session and crisis resources f
   expect(blockedWrite.status()).toBe(303);
   expect(blockedWrite.headers().location).toBe("/safety/limits");
 
+  // And on a bookmarked edit form, which is how a pre-v2 account reaches a
+  // write without the journal page ever rendering. The gate runs before the
+  // entry is looked up, so an unread statement redirects rather than 404s.
+  await page.goto(`/entries/${randomUUID()}/edit`);
+  await expect(page).toHaveURL(/\/safety\/limits$/);
+
   await page.getByRole("button", { name: "I have read this" }).click();
   await expect(page.getByRole("heading", { name: "Journal history" })).toBeVisible();
 
