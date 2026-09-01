@@ -8,6 +8,25 @@ It is a self-guided reflection practice, not therapy. It is not a therapist, it 
 and it is not a substitute for professional care. If you are in crisis, contact your local emergency
 services or a crisis line.
 
+## 🛟 Safety
+
+The app states its limits before your first session and keeps them on every screen afterwards,
+alongside the crisis line for the configured locale.
+
+- Crisis resources are hard-coded per locale in `src/lib/safety/crisis-resources.ts` and selected
+  with `CRISIS_RESOURCE_LOCALE` (`international`, `cz`, `gb`, or `us`). No model output ever
+  produces a phone number or a URL on this path.
+- `/safety` holds the crisis resources, the six-step safety plan, and the optional PHQ-9 and GAD-7
+  check-ins. It is one click from the notice at the foot of every screen.
+- Check-ins store the summed score only. The app never labels, bands, or interprets it. Above the
+  threshold it shows what the published trials found about guided versus unguided programmes, which
+  is a statement about those trials rather than about you.
+- The safety plan is plan storage and rehearsal, not the studied intervention, which paired a
+  clinician-built plan with human follow-up calls.
+- Writing directions that invite trauma disclosure sit behind a one-off consent step and stay out
+  of the default flow.
+- Nothing you write is filtered, blocked, or refused on its way into the journal.
+
 ## Local setup
 
 1. Copy the example environment file: `cp .env.example .env.local`

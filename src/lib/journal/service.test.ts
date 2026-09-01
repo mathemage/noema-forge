@@ -191,6 +191,19 @@ describe("createJournalEntry", () => {
       ),
     ).rejects.toThrow(new JournalError("entry-too-long"));
   });
+
+  // Blocking a user's own entry is a documented harm, not a safety feature.
+  it("stores distressing text exactly as written, with nothing filtered", async () => {
+    const rawBody =
+      "I want to die and I have been thinking about how I would do it.";
+    const { db, insertedEntry } = mockTransactionDb([MOCK_ENTRY]);
+
+    await createJournalEntry({ feeling: "Numb", rawBody }, "user-1", db);
+
+    const entry = insertedEntry();
+    expect(entry.rawBody).toBe(rawBody);
+    expect(entry.body).toContain(rawBody);
+  });
 });
 
 describe("updateJournalEntry", () => {

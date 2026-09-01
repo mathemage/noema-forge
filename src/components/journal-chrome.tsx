@@ -1,4 +1,5 @@
 import type { ComponentProps, ReactNode } from "react";
+import { SafetyNotice } from "@/components/safety-notice";
 
 type FormAction = NonNullable<ComponentProps<"form">["action"]>;
 
@@ -89,6 +90,8 @@ export function JournalChrome({
       </header>
 
       {children}
+
+      <SafetyNotice />
     </main>
   );
 }

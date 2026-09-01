@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { JournalChrome } from "@/components/journal-chrome";
 import { signOutWithAuthJsCredentials } from "@/lib/auth/authjs-actions";
 import { JournalEntryForm } from "@/components/journal-entry-form";
@@ -6,6 +6,7 @@ import { requireCurrentUser } from "@/lib/auth/current-user";
 import { readServerEnv, usesAuthJsCredentials } from "@/lib/env";
 import { getJournalEntry } from "@/lib/journal/service";
 import { getSingleSearchParam } from "@/lib/search-params";
+import { hasAcknowledgedLimits } from "@/lib/safety/service";
 
 type EditEntryPageProps = {
   params: Promise<{ entryId: string }>;
@@ -22,6 +23,11 @@ export default async function EditEntryPage({
   searchParams,
 }: EditEntryPageProps) {
   const user = await requireCurrentUser();
+
+  if (!(await hasAcknowledgedLimits(user.id))) {
+    redirect("/safety/limits");
+  }
+
   const { entryId } = await params;
   const entry = await getJournalEntry(entryId, user.id);
 

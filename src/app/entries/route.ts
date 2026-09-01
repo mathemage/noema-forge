@@ -4,6 +4,7 @@ import { getRequestUser } from "@/lib/auth/request";
 import { isCaptureSource } from "@/lib/journal/capture-source";
 import { JournalError, createJournalEntry } from "@/lib/journal/service";
 import { redirectToRequestOrigin } from "@/lib/request-url";
+import { hasAcknowledgedLimits } from "@/lib/safety/service";
 
 function getField(formData: FormData, name: string) {
   return String(formData.get(name) ?? "");
@@ -14,6 +15,11 @@ async function handlePost(request: NextAuthRequest) {
 
   if (!user) {
     return redirectToRequestOrigin("/sign-in");
+  }
+
+  // The gate belongs at the write boundary too, not only on the journal page.
+  if (!(await hasAcknowledgedLimits(user.id))) {
+    return redirectToRequestOrigin("/safety/limits");
   }
 
   const formData = await request.formData();

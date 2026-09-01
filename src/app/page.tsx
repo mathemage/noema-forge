@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
 import { EntryMetadata } from "@/components/entry-metadata";
 import { JournalChrome } from "@/components/journal-chrome";
 import { signOutWithAuthJsCredentials } from "@/lib/auth/authjs-actions";
@@ -12,6 +14,7 @@ import {
 } from "@/lib/journal/limits";
 import { listJournalEntries } from "@/lib/journal/service";
 import { getSingleSearchParam } from "@/lib/search-params";
+import { hasAcknowledgedLimits } from "@/lib/safety/service";
 
 type HomePageProps = {
   searchParams: Promise<{
@@ -79,6 +82,12 @@ function emptyHistoryMessage(filters: HistoryFilters, page: number) {
 
 export default async function Home({ searchParams }: HomePageProps) {
   const user = await requireCurrentUser();
+
+  // The limits statement comes before the first session, not after it.
+  if (!(await hasAcknowledgedLimits(user.id))) {
+    redirect("/safety/limits");
+  }
+
   const params = await searchParams;
   const env = readServerEnv();
   const signOutAction = usesAuthJsCredentials(env)
@@ -97,6 +106,14 @@ export default async function Home({ searchParams }: HomePageProps) {
 
   return (
     <JournalChrome
+      actions={
+        <Link
+          className="button-inverse inline-flex items-center justify-center px-4 py-2 font-semibold"
+          href="/safety"
+        >
+          Safety and crisis resources
+        </Link>
+      }
       appName={env.NEXT_PUBLIC_APP_NAME}
       description="Capture raw thoughts, distill them into guided reflections, and keep every entry in one private, searchable journal."
       signOutAction={signOutAction}

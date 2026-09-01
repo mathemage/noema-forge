@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import { registerJournalUser } from "./support/register";
 
 const responsiveViewports = [
   { height: 700, width: 320 },
@@ -46,18 +47,8 @@ test("signed-in journal surfaces keep controls in bounds without overlap", async
   const email = `visual-${uniqueId}@example.com`;
   const entryText = `Responsive visual entry ${uniqueId}`;
 
-  await page.goto("/sign-in");
-  await page
-    .locator('form[action="/auth/register"] input[name="email"]')
-    .fill(email);
-  await page
-    .locator('form[action="/auth/register"] input[name="password"]')
-    .fill("journal-pass-123");
-  await page
-    .locator('form[action="/auth/register"] button[type="submit"]')
-    .click();
+  await registerJournalUser(page, email);
 
-  await expect(page.getByRole("heading", { name: "Journal history" })).toBeVisible();
   await page.getByLabel("Entry", { exact: true }).fill(entryText);
   await page.getByRole("button", { name: "Save entry" }).click();
   await expect(page.getByRole("heading", { name: "Entry detail" })).toBeVisible();

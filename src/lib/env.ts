@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { crisisLocaleValues } from "@/lib/safety/crisis-resources";
 
 const coerceOptional = (value: unknown) => {
   if (typeof value !== "string") {
@@ -23,6 +24,10 @@ const serverEnvSchema = z.object({
   AUTH_TRUST_HOST: z.preprocess(
     coerceOptional,
     z.enum(["true", "false"]).default("false"),
+  ),
+  CRISIS_RESOURCE_LOCALE: z.preprocess(
+    coerceOptional,
+    z.enum(crisisLocaleValues).default("international"),
   ),
   DATABASE_URL: optionalUrl,
   DATABASE_URL_NON_POOLING: optionalUrl,
