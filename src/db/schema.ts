@@ -1,7 +1,16 @@
 import { sql } from "drizzle-orm";
-import { index, integer, pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  index,
+  integer,
+  pgEnum,
+  pgTable,
+  text,
+  timestamp,
+} from "drizzle-orm/pg-core";
 import { captureSourceValues } from "@/lib/journal/capture-source";
 import { sessionTypeValues } from "@/lib/journal/session";
+import { severityInstrumentValues } from "@/lib/safety/instruments";
 
 const createdAt = timestamp("created_at", { withTimezone: true })
   .defaultNow()
@@ -15,6 +24,10 @@ const updatedAt = timestamp("updated_at", { withTimezone: true })
 export const assistanceSource = pgEnum("assistance_source", ["fallback", "ollama"]);
 export const captureSource = pgEnum("capture_source", captureSourceValues);
 export const sessionType = pgEnum("session_type", sessionTypeValues);
+export const severityInstrument = pgEnum(
+  "severity_instrument",
+  severityInstrumentValues,
+);
 export const uploadKind = pgEnum("upload_kind", ["audio", "image"]);
 
 export const users = pgTable("users", {
@@ -86,6 +99,59 @@ export const journalEntries = pgTable(
     index("journal_entries_body_search_idx").using(
       "gin",
       sql`to_tsvector('simple', ${table.body})`,
+    ),
+  ],
+);
+
+export const safetyProfiles = pgTable("safety_profiles", {
+  createdAt,
+  // Null until the user has read the limits statement, which gates the first session.
+  limitsAcknowledgedAt: timestamp("limits_acknowledged_at", { withTimezone: true }),
+  // Null until the user opts in, which is what makes trauma-writing prompts reachable.
+  traumaWritingOptedInAt: timestamp("trauma_writing_opted_in_at", {
+    withTimezone: true,
+  }),
+  updatedAt,
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+});
+
+export const safetyPlans = pgTable("safety_plans", {
+  createdAt,
+  distraction: text("distraction").notNull(),
+  internalCoping: text("internal_coping").notNull(),
+  meansSafety: text("means_safety").notNull(),
+  // Step 6 may only be left blank behind an explicit acknowledgement.
+  meansSafetyAcknowledged: boolean("means_safety_acknowledged")
+    .notNull()
+    .default(false),
+  professionalContacts: text("professional_contacts").notNull(),
+  supportContacts: text("support_contacts").notNull(),
+  updatedAt,
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  warningSigns: text("warning_signs").notNull(),
+});
+
+export const severityCheckIns = pgTable(
+  "severity_check_ins",
+  {
+    createdAt,
+    id: text("id").primaryKey(),
+    instrument: severityInstrument("instrument").notNull(),
+    // The summed score only. The app stores it and never interprets it.
+    score: integer("score").notNull(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+  },
+  (table) => [
+    index("severity_check_ins_user_instrument_created_at_idx").on(
+      table.userId,
+      table.instrument,
+      table.createdAt,
     ),
   ],
 );

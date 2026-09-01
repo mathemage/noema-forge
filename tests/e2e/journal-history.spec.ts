@@ -1,18 +1,9 @@
 import { randomUUID } from "node:crypto";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import { JOURNAL_HISTORY_PAGE_SIZE } from "../../src/lib/journal/limits";
+import { registerJournalUser } from "./support/register";
 
 const SEEDED_ENTRIES = JOURNAL_HISTORY_PAGE_SIZE + 1;
-
-async function register(page: Page, email: string) {
-  await page.goto("/sign-in");
-  await page.locator('form[action="/auth/register"] input[name="email"]').fill(email);
-  await page
-    .locator('form[action="/auth/register"] input[name="password"]')
-    .fill("journal-pass-123");
-  await page.locator('form[action="/auth/register"] button[type="submit"]').click();
-  await expect(page.getByRole("heading", { name: "Journal history" })).toBeVisible();
-}
 
 test("history pages and date filters keep an archive past one page usable", async ({
   page,
@@ -20,7 +11,7 @@ test("history pages and date filters keep an archive past one page usable", asyn
   const uniqueId = randomUUID();
   const today = new Date().toISOString().slice(0, 10);
 
-  await register(page, `history-${uniqueId}@example.com`);
+  await registerJournalUser(page, `history-${uniqueId}@example.com`);
 
   for (let index = 0; index < SEEDED_ENTRIES; index += 1) {
     const response = await page.request.post("/entries", {

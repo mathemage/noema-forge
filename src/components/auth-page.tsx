@@ -1,4 +1,5 @@
 import type { ComponentProps } from "react";
+import { SafetyNotice } from "@/components/safety-notice";
 
 type FormAction = NonNullable<ComponentProps<"form">["action"]>;
 
@@ -199,6 +200,10 @@ export function AuthPage({
                 </button>
               </form>
             </article>
+          </div>
+
+          <div className="mt-6">
+            <SafetyNotice />
           </div>
         </div>
       </section>

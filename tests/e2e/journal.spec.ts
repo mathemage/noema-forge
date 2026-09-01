@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { expect, test, type Page } from "@playwright/test";
+import { registerJournalUser } from "./support/register";
 
 function createCredentials() {
   const uniqueId = randomUUID();
@@ -39,19 +40,8 @@ test("desktop user can register, create, edit, search, sign out, and sign back i
   const editableEntry = `Editable journal entry ${credentials.uniqueId}`;
   const updatedEntry = `${editableEntry} refined`;
 
-  await page.goto("/sign-in");
+  await registerJournalUser(page, credentials.email);
 
-  await page
-    .locator('form[action="/auth/register"] input[name="email"]')
-    .fill(credentials.email);
-  await page
-    .locator('form[action="/auth/register"] input[name="password"]')
-    .fill(credentials.password);
-  await page
-    .locator('form[action="/auth/register"] button[type="submit"]')
-    .click();
-
-  await expect(page.getByRole("heading", { name: "Journal history" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Voice dictation" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Handwriting OCR" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Guided reflection" })).toBeVisible();

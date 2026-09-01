@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { expect, test, type Page } from "@playwright/test";
+import { registerJournalUser } from "./support/register";
 
 test.use({
   viewport: {
@@ -38,18 +39,8 @@ test("mobile layout keeps multimodal capture and history usable", async ({ page 
   const credentials = createCredentials();
   const entryText = `Mobile journal entry ${credentials.uniqueId}`;
 
-  await page.goto("/sign-in");
-  await page
-    .locator('form[action="/auth/register"] input[name="email"]')
-    .fill(credentials.email);
-  await page
-    .locator('form[action="/auth/register"] input[name="password"]')
-    .fill(credentials.password);
-  await page
-    .locator('form[action="/auth/register"] button[type="submit"]')
-    .click();
+  await registerJournalUser(page, credentials.email);
 
-  await expect(page.getByRole("heading", { name: "Journal history" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "New journal entry" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Guided reflection" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Voice dictation" })).toBeVisible();
